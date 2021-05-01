@@ -1,8 +1,6 @@
 <?php 
 
-const DSN = 'mysql:host=7a9ebbccd663;dbname=todo;charset=utf8';
-const USERNAME = 'todo_user';
-const PASSWORD = 'userpw';
+require_once '../../config/database.php';
 
 const TODO_LIST_STATEMENT = 'SELECT * FROM todos INNER JOIN (SELECT todo_id, title, detail FROM todo_histories ORDER BY id DESC LIMIT 1) AS history ON todos.id=history.todo_id';
 
