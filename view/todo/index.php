@@ -1,17 +1,13 @@
 <?php 
 
-require_once '../../config/database.php';
+require_once('../../config/database.php');
 
-const TODO_LIST_STATEMENT = 'SELECT * FROM todos INNER JOIN (SELECT todo_id, title, detail FROM todo_histories ORDER BY id DESC LIMIT 1) AS history ON todos.id=history.todo_id';
+require_once('../../model/Todo.php');
 
-$pdo = new PDO(DSN, USERNAME, PASSWORD);
-#$stmh = $pdo->query('SELECT * FROM todo.todos');
-$stmh = $pdo->query(TODO_LIST_STATEMENT);
+require_once('../../controller/TodoController.php');
 
-
-$todo_list = $stmh->fetchAll(PDO::FETCH_ASSOC);
-#var_dump($todo_list);
-
+$action = new TodoController;
+$todo_list = $action->index();
 
 ?>
 
