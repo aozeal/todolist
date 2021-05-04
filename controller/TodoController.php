@@ -8,7 +8,7 @@ class TodoController{
 	}
 
 	public function detail(){
-		$todo_id = $_GET['todo_id'];
+		$todo_id = $_GET['id'];
 
 		$todo_detail = Todo::findById($todo_id);
 
@@ -64,6 +64,81 @@ class TodoController{
 		header("Location: ./index.php");
 	}
 
+	public function edit(){
+		$todo_id = $_GET['id'];
+		$todo_detail = Todo::findById($todo_id);
+
+		if ($_SERVER['REQUEST_METHOD'] !== 'POST'){
+			return $todo_detail;
+		}
+
+		$data = array(
+			'id' => $_POST['id'],
+			'title' => $_POST['title'],
+			'detail' => $_POST['detail'],
+			'deadline_at' => $_POST['deadline_at']
+		);
+
+		$validation = new TodoValidation();
+		$validation->setData($data);
+
+		if ($validation->check() === false){
+			$error_msgs = $validation->getErrorMessages();
+
+			//セッションにエラーメッセージを追加
+			session_start();
+			$_SESSION['error_msgs'] = $error_msgs;
+
+			$params = sprintf("?id=%d&title=%s&detail=%s&deadline_at=%s", 
+				$data['id'], $data['title'], $data['detail'], $data['deadline_at']);
+			header("Location: ./edit.php" . $params);		
+			exit;
+		}
+
+		$validate_data = $validation->getData();
+		$id = $validate_data['id'];
+		$title = $validate_data['title'];
+		$detail = $validate_data['detail'];
+		$deadline_at = $validate_data['deadline_at'];
+
+		$todo = new Todo;
+		$todo->setId($id);
+		$todo->setTitle($title);
+		$todo->setDetail($detail);
+		$todo->setDeadline($deadline_at);
+
+		$result = $todo->update();
+
+		if ($result === false){
+			$params = sprintf("?id=%d&title=%s&detail=%s&deadline_at=%s", 
+				$id, $title, $detail, $deadline_at);
+			header("Location: ./edit.php" . $params);
+			exit;
+		}
+
+		header("Location: ./detail.php?id={$id}");
+	}
+
+	public function delete(){
+		$todo_id = $_GET['todo_id'];
+		$is_exist = Todo::isExistById($todo_id);
+		if(!$is_exist){
+			session_start();
+			$_SESSION['error_msgs'] = [
+				sprintf ("id=%sに該当するレコードが存在しませんでした", $todo_id)
+			];
+			header("Location: ./index.php");
+		}
+
+		$todo = new Todo;
+		$todo->setId($todo_id);
+		$result = $todo->delete();
+		if ($result === false){
+			session_start();
+			$_SESSION['error_msgs'] = [sprintf("削除に失敗しました。id=%s", $todo_id)];
+		}
+		header("Location: ./index.php");
+	}
 
 }
 

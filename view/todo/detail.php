@@ -22,6 +22,7 @@ $todo_detail = $action->detail();
 </head>
 <body>
 	<header>
+		<a href="./index.php">一覧</a>, 
 		<a href="./new.php">新規登録</a>
 	</header>
 	<table>
@@ -42,6 +43,9 @@ $todo_detail = $action->detail();
 			</tr>
 		</tbody>
 	</table>
+	<div>
+		<button><a href="./edit.php?id=<?php echo $todo_detail['id']; ?>">編集</a></button>
+	</div>
 
 </body>
 </html>

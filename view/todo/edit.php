@@ -8,26 +8,18 @@ require_once('../../controller/TodoController.php');
 
 require_once('../../validation/TodoValidation.php');
 
-$title='';
-$detail='';
-$deadline_at = '';
-
-if($_SERVER['REQUEST_METHOD'] === 'POST'){
-	$action = new TodoController;
-	$action->new();
-}
+$action = new TodoController;
+$todo_detail = $action->edit();
 
 session_start();
 $error_msgs = $_SESSION['error_msgs'];
-//セッション削除
 unset($_SESSION['error_msgs']);
 
-if($_SERVER['REQUEST_METHOD'] === 'GET'){
-	$title = $_GET['title'];
-	$detail = $_GET['detail'];
-	$deadline_at = $_GET['deadline_at'];
+if ($error_msgs){
+	$todo_detail['title'] = $_GET['title'];
+	$todo_detail['detail'] = $_GET['detail'];
+	$todo_detail['deadline_at'] = $_GET['deadline_at'];
 }
-
 
 ?>
 
@@ -37,7 +29,7 @@ if($_SERVER['REQUEST_METHOD'] === 'GET'){
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
-	<title>新規登録</title>
+	<title>編集</title>
 
 </head>
 <body>
@@ -55,13 +47,14 @@ if($_SERVER['REQUEST_METHOD'] === 'GET'){
 		</div>
 	<?php endif; ?>
 
-	<form action="./new.php" method="POST">
+	<form action="./edit.php" method="POST">
+		<div>ID : <?php echo $todo_detail['id']; ?><input type="hidden" name="id" value="<?php echo $todo_detail['id']; ?>"></div>
 		<div>タイトル</div>
-		<div><input type="text" name="title" placeholder="タイトルを記入してください" value="<?php echo $title ?>"></div>
+		<div><input type="text" name="title" placeholder="タイトルを記入してください" value="<?php echo $todo_detail['title']; ?>"></div>
 		<div>詳細</div>
-		<div><textarea name="detail" placeholder="詳細を記入してください"><?php echo $detail ?></textarea></div>
+		<div><textarea name="detail" placeholder="詳細を記入してください"><?php echo $todo_detail['detail']; ?></textarea></div>
 		<div>期日</div>
-		<div><input type="datetime" name="deadline_at" placeholder="20XX-XX-XX XX:XX:XX" value="<?php echo $deadline_at ?>"></div>
+		<div><input type="datetime" name="deadline_at" placeholder="20XX-XX-XX XX:XX:XX" value="<?php echo $todo_detail['deadline_at']; ?>"></div>
 		<button type="submit">登録</button>
 	</form>
 
