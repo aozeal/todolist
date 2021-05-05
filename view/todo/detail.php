@@ -23,6 +23,7 @@ $todo_detail = $action->detail();
 <body>
 	<header>
 		<a href="./index.php">一覧</a>, 
+		<a href="./index.php?view=with_done">一覧（達成済みアリ）</a>, 
 		<a href="./new.php">新規登録</a>
 	</header>
 	<table>

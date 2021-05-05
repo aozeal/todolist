@@ -7,6 +7,12 @@ class TodoController{
 		return $todo_list;
 	}
 
+	public function indexWithDone(){
+		$todo_list = Todo::findAllWithDone();
+		
+		return $todo_list;
+	}
+
 	public function detail(){
 		$todo_id = $_GET['id'];
 
@@ -139,6 +145,29 @@ class TodoController{
 		}
 		header("Location: ./index.php");
 	}
+
+
+	public function done(){
+		$todo_id = $_GET['todo_id'];
+		$is_exist = Todo::isExistById($todo_id);
+		if(!$is_exist){
+			session_start();
+			$_SESSION['error_msgs'] = [
+				sprintf ("id=%sに該当するレコードが存在しませんでした", $todo_id)
+			];
+			header("Location: ./index.php");
+		}
+
+		$todo = new Todo;
+		$todo->setId($todo_id);
+		$result = $todo->done();
+		if ($result === false){
+			session_start();
+			$_SESSION['error_msgs'] = [sprintf("削除に失敗しました。id=%s", $todo_id)];
+		}
+		header("Location: ./index.php");
+	}
+
 
 }
 

@@ -11,8 +11,18 @@ if (isset($_GET['action']) & $_GET['action'] === 'delete'){
 	$action->delete(); //$todo_listを返してもいいけど、内部でリダイレクトしたらいいのでは？
 }
 
+if (isset($_GET['action']) & $_GET['action'] === 'done'){
+	$action = new TodoController;
+	$action->done();
+}
+
 $action = new TodoController;
-$todo_list = $action->index();
+if (isset($_GET['view']) & $_GET['view'] === 'with_done'){
+	$todo_list = $action->indexWithDone();
+}
+else{
+	$todo_list = $action->index();
+}
 
 
 session_start();
@@ -34,6 +44,8 @@ unset($_SESSION['error_msgs']);
 </head>
 <body>
 	<header>
+		<a href="./index.php">一覧</a>, 
+		<a href="./index.php?view=with_done">一覧（達成済みアリ）</a>, 
 		<a href="./new.php">新規登録</a>
 	</header>
 	<?php if($error_msgs): ?>
@@ -53,6 +65,11 @@ unset($_SESSION['error_msgs']);
 						<?php echo $todo['id']; ?> : 
 						<?php echo $todo['title'];?>
 					</a>
+					<?php if (is_null($todo['done_at'])): ?>
+						<button class="done_btn" data-id="<?php echo $todo['id'];?>">
+							完了
+						</button>
+					<?php endif; ?>
 					<button class="delete_btn" data-id="<?php echo $todo['id'];?>">
 						削除
 					</button>
@@ -69,8 +86,14 @@ unset($_SESSION['error_msgs']);
 <script>
 	$(".delete_btn").on('click', function(){
 		alert($(this).data('id') + 'を削除します');
-		const todo_id = $(this).data('id')
+		const todo_id = $(this).data('id');
 		window.location.href = "./index.php?action=delete&todo_id=" + todo_id;
+	});
+
+	$(".done_btn").on('click', function(){
+		alert($(this).data('id') + 'を達成にします');
+		const todo_id = $(this).data('id');
+		window.location.href = "./index.php?action=done&todo_id=" + todo_id;
 	});
 </script>
 
