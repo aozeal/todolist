@@ -127,12 +127,21 @@ class Todo{
 			$dbh = new PDO(DSN, USERNAME, PASSWORD);
 			$dbh->beginTransaction();
 
-			$stmt1 = $dbh->prepare("INSERT INTO todos (user_id, title, detail, created_at, updated_at) VALUES ('TestUser', :title, :detail,  NOW(), NOW());");
-			$stmt1->bindParam(':title', $this->title, PDO::PARAM_STR);
-			$stmt1->bindParam(':detail', $this->detail, PDO::PARAM_STR);
+			$query1 = sprintf(
+				"INSERT INTO todos (user_id, title, detail, created_at, updated_at) VALUES ('TestUser', '%s', '%s',  NOW(), NOW());",
+				$this->title, $this->detail
+			);
+			$stmt1 = $dbh->prepare($query1);
 			$stmt1->execute();
 
 			$todo_id = $dbh->lastInsertId();
+/*			$query2 = sprintf(
+				"INSERT INTO todo_histories (todo_id, user_id, title, detail, created_at, updated_at) VALUES (%d, 'TestUser', '%s', '%s',  NOW(), NOW());",
+				$todo_id, $this->title, $this->detail
+			);
+			$stmt2 = $dbh->prepare($query2);
+			$stmt2->execute();
+*/
 			$this->setId($todo_id);
 			$query2 = sprintf("SELECT * FROM todos WHERE id=%d" , $this->id);
 			$stmt2 = $dbh->prepare($query2);
@@ -162,10 +171,11 @@ class Todo{
 			$dbh = new PDO(DSN, USERNAME, PASSWORD);
 			$dbh->beginTransaction();
 
-			$stmt1 = $dbh->prepare("UPDATE todos SET title=:title, detail=:detail, updated_at=NOW() WHERE id=:id;");
-			$stmt1->bindParam(':title', $this->title, PDO::PARAM_STR);
-			$stmt1->bindParam(':detail', $this->detail, PDO::PARAM_STR);
-			$stmt1->bindParam(':id', $this->id, PDO::PARAM_INT);
+			$query1 = sprintf(
+				"UPDATE todos SET title='%s', detail='%s', updated_at=NOW() WHERE id=%d;",
+				$this->title, $this->detail, $this->id
+			);
+			$stmt1 = $dbh->prepare($query1);
 			$stmt1->execute();
 
 			$query2 = sprintf("SELECT * FROM todos WHERE id=%d", $this->id);
