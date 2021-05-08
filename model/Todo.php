@@ -6,6 +6,8 @@ class Todo{
 	public $title;
 	public $detail;
 	public $deadline_at;
+	
+	public $savedData;
 
 	public function getId(){
 		return $this->id;
@@ -38,6 +40,14 @@ class Todo{
 	public function setDeadline($deadline_at){
 		#$this->deadline_at = $deadline_at;
 		$this->deadline_at = null;
+	}
+
+	public function getSavedData(){
+		return $this->savedData;
+	}
+
+	public function setSavedData($data){
+		$this->savedData = $data;
 	}
 
 
@@ -138,10 +148,7 @@ class Todo{
 			$stmt2 = $dbh->prepare($query2);
 			$stmt2->execute();
 			$result2 = $stmt2->fetch(PDO::FETCH_ASSOC);
-
-			$query3 = $this->historyQuery($result2);
-			$stmt3 = $dbh->prepare($query3);
-			$stmt3->execute();
+			$this->setSavedData($result2);
 
 			$dbh->commit();
 			
@@ -172,10 +179,7 @@ class Todo{
 			$stmt2 = $dbh->prepare($query2);
 			$stmt2->execute();
 			$result2 = $stmt2->fetch(PDO::FETCH_ASSOC);
-
-			$query3 = $this->historyQuery($result2);
-			$stmt3 = $dbh->prepare($query3);
-			$stmt3->execute();
+			$this->setSavedData($result2);
 
 			$dbh->commit();
 			
@@ -205,13 +209,10 @@ class Todo{
 			$stmt2 = $dbh->prepare($query2);
 			$stmt2->execute();
 			$result2 = $stmt2->fetch(PDO::FETCH_ASSOC);
-
-			$query3 = $this->historyQuery($result2);
-			$stmt3 = $dbh->prepare($query3);
-			$stmt3->execute();
+			$this->setSavedData($result2);
 
 			$dbh->commit();
-
+			
 			$result = true;
 		} catch (PDOException $e){
 			$dbh->rollBack();
@@ -262,13 +263,10 @@ class Todo{
 			$stmt2 = $dbh->prepare($query2);
 			$stmt2->execute();
 			$result2 = $stmt2->fetch(PDO::FETCH_ASSOC);
-
-			$query3 = $this->historyQuery($result2);
-			$stmt3 = $dbh->prepare($query3);
-			$stmt3->execute();
+			$this->setSavedData($result2);
 
 			$dbh->commit();
-
+			
 			$result = true;
 		} catch (PDOException $e){
 			$dbh->rollBack();

@@ -1,103 +1,11 @@
 <?php
 
 
-class Todo{
-	public $id;
-	public $title;
-	public $detail;
-	public $deadline_at;
+class TodoHistory{
+	public $data;
 
-	public function getId(){
-		return $this->id;
-	}
-
-	public function setId($id){
-		$this->id = $id;
-	}
-
-	public function getTitle(){
-		return $this->title;
-	}
-
-	public function setTitle($title){
-		$this->title = $title;
-	}
-
-	public function getDetail(){
-		return $this->detail;
-	}
-
-	public function setDetail($detail){
-		$this->detail = $detail;
-	}
-
-	public function getDeadline(){
-		return $this->deadline_at;
-	}
-
-	public function setDeadline($deadline_at){
-		#$this->deadline_at = $deadline_at;
-		$this->deadline_at = null;
-	}
-
-
-	public static function findByQuery($query){
-		$dbh = new PDO(DSN, USERNAME, PASSWORD);
-		$stmt = $dbh->query($query);
-
-		if($stmt){
-			$result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-		}
-		else{
-			$result = [];
-		}
-		return $result;
-	}
-
-	//全レコードを取得
-	public static function findAll(){
-		#user_idは後ほど修正
-		$query = "SELECT * FROM todos WHERE user_id='TestUser' AND deleted_at IS NULL AND done_at IS NULL;";
-		return self::findByQuery($query);
-	}
-
-	//達成済も含めて全レコードを取得
-	public static function findAllWithDone(){
-		#user_idは後ほど修正
-		$query = "SELECT * FROM todos WHERE user_id='TestUser' AND deleted_at IS NULL;";
-		return self::findByQuery($query);
-	}
-	
-
-	//詳細データを取得
-	public static function findById($todo_id){
-		#user_idは後ほど修正
-		$query = "SELECT * FROM todos WHERE id=${todo_id} AND user_id='TestUser'";
-
-		$dbh = new PDO(DSN, USERNAME, PASSWORD);
-		$stmt = $dbh->query($query);
-
-		if($stmt){
-			$result = $stmt->fetch(PDO::FETCH_ASSOC);
-		}
-		else{
-			$result = [];
-		}
-		return $result;
-	}
-
-
-	//レコードの存在を確認
-	public static function isExistById($todo_id){
-		$query = "SELECT * FROM todos WHERE id=${todo_id}";
-
-		$dbh = new PDO(DSN, USERNAME, PASSWORD);
-		$stmt = $dbh->query($query);
-
-		if(!$stmt){
-			return false;
-		}
-		return true;
+	public function setSavedData($data){
+		$this->data = $data;
 	}
 
 
@@ -127,30 +35,18 @@ class Todo{
 			$dbh = new PDO(DSN, USERNAME, PASSWORD);
 			$dbh->beginTransaction();
 
-			$query1 = sprintf(
-				"INSERT INTO todos (user_id, title, detail, created_at, updated_at) VALUES ('TestUser', '%s', '%s',  NOW(), NOW());",
-				$this->title, $this->detail
-			);
-			$stmt1 = $dbh->prepare($query1);
-			$stmt1->execute();
-
-			$todo_id = $dbh->lastInsertId();
-/*			$query2 = sprintf(
-				"INSERT INTO todo_histories (todo_id, user_id, title, detail, created_at, updated_at) VALUES (%d, 'TestUser', '%s', '%s',  NOW(), NOW());",
-				$todo_id, $this->title, $this->detail
-			);
-			$stmt2 = $dbh->prepare($query2);
-			$stmt2->execute();
-*/
-			$this->setId($todo_id);
-			$query2 = sprintf("SELECT * FROM todos WHERE id=%d" , $this->id);
-			$stmt2 = $dbh->prepare($query2);
-			$stmt2->execute();
-			$result2 = $stmt2->fetch(PDO::FETCH_ASSOC);
-
-			$query3 = $this->historyQuery($result2);
-			$stmt3 = $dbh->prepare($query3);
-			$stmt3->execute();
+			$stmt = $dbh->prepare("INSERT INTO todo_histories (todo_id, user_id, title, detail, deadline_at, done_at, created_at, updated_at, deleted_at) 
+				VALUES (:todo_id, :user_id, :title, :detail, :deadline_at, :done_at, :created_at, :updated_at, :deleted_at);");
+			$stmt->bindParam(':todo_id', $this->data['id'], PDO::PARAM_INT);
+			$stmt->bindParam(':user_id', $this->data['user_id'], PDO::PARAM_STR);
+			$stmt->bindParam(':title', $this->data['title'], PDO::PARAM_STR);
+			$stmt->bindParam(':detail', $this->data['detail'], PDO::PARAM_STR);
+			$stmt->bindParam(':deadline_at', $this->data['deadline_at'], PDO::PARAM_STR);
+			$stmt->bindParam(':done_at', $this->data['done_at'], PDO::PARAM_STR);
+			$stmt->bindParam(':created_at', $this->data['created_at'], PDO::PARAM_STR);
+			$stmt->bindParam(':updated_at', $this->data['updated_at'], PDO::PARAM_STR);
+			$stmt->bindParam(':deleted_at', $this->data['deleted_at'], PDO::PARAM_STR);
+			$stmt->execute();
 
 			$dbh->commit();
 			
@@ -164,131 +60,6 @@ class Todo{
 
 		return $result;
 	}
-
-
-	public function update(){
-		try{
-			$dbh = new PDO(DSN, USERNAME, PASSWORD);
-			$dbh->beginTransaction();
-
-			$query1 = sprintf(
-				"UPDATE todos SET title='%s', detail='%s', updated_at=NOW() WHERE id=%d;",
-				$this->title, $this->detail, $this->id
-			);
-			$stmt1 = $dbh->prepare($query1);
-			$stmt1->execute();
-
-			$query2 = sprintf("SELECT * FROM todos WHERE id=%d", $this->id);
-			$stmt2 = $dbh->prepare($query2);
-			$stmt2->execute();
-			$result2 = $stmt2->fetch(PDO::FETCH_ASSOC);
-
-			$query3 = $this->historyQuery($result2);
-			$stmt3 = $dbh->prepare($query3);
-			$stmt3->execute();
-
-			$dbh->commit();
-			
-			$result = true;
-		} catch(PDOException $e){
-			$dbh->rollBack();
-
-			echo $e->getMessage();
-			$result = false;
-		}
-
-		return $result;
-	}
-
-
-	public function delete(){
-		try{
-			$dbh = new PDO(DSN, USERNAME, PASSWORD);
-
-			$dbh->beginTransaction();
-			$query1 = sprintf("UPDATE todos SET deleted_at=NOW() WHERE id=%d;", $this->id);
-
-			$stmt1 = $dbh->prepare($query1);
-			$stmt1->execute();
-
-			$query2 = sprintf("SELECT * FROM todos WHERE id=%d", $this->id);
-			$stmt2 = $dbh->prepare($query2);
-			$stmt2->execute();
-			$result2 = $stmt2->fetch(PDO::FETCH_ASSOC);
-
-			$query3 = $this->historyQuery($result2);
-			$stmt3 = $dbh->prepare($query3);
-			$stmt3->execute();
-
-			$dbh->commit();
-
-			$result = true;
-		} catch (PDOException $e){
-			$dbh->rollBack();
-			echo $e->getMessage();
-			$result = false;
-		}
-
-		return $result;
-	}
-
-
-/*
-	//以下は物理削除
-	public function delete(){
-		try{
-			$dbh = new PDO(DSN, USERNAME, PASSWORD);
-
-			$dbh->beginTransaction();
-			$query1 = sprintf("DELETE FROM todos WHERE id=%d", $this->id);
-
-			$stmt1 = $dbh->prepare($query1);
-			$result = $stmt1->execute();
-
-			$dbh->commit();
-
-		} catch (PDOException $e){
-			$dbh->rollBack();
-			echo $e->getMessage();
-			$result = false;
-		}
-
-		return $result;
-	}
-*/
-
-
-	public function done(){
-		try{
-			$dbh = new PDO(DSN, USERNAME, PASSWORD);
-
-			$dbh->beginTransaction();
-			$query1 = sprintf("UPDATE todos SET done_at=NOW() WHERE id=%d;", $this->id);
-
-			$stmt1 = $dbh->prepare($query1);
-			$stmt1->execute();
-
-			$query2 = sprintf("SELECT * FROM todos WHERE id=%d", $this->id);
-			$stmt2 = $dbh->prepare($query2);
-			$stmt2->execute();
-			$result2 = $stmt2->fetch(PDO::FETCH_ASSOC);
-
-			$query3 = $this->historyQuery($result2);
-			$stmt3 = $dbh->prepare($query3);
-			$stmt3->execute();
-
-			$dbh->commit();
-
-			$result = true;
-		} catch (PDOException $e){
-			$dbh->rollBack();
-			echo $e->getMessage();
-			$result = false;
-		}
-
-		return $result;
-	}
-
 
 
 }

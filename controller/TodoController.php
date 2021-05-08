@@ -1,5 +1,6 @@
 <?php
 
+
 class TodoController{
 	public function index(){
 		$todo_list = Todo::findAll();
@@ -61,10 +62,24 @@ class TodoController{
 		$result = $todo->save();
 
 		if ($result === false){
+			//セッションにエラーメッセージを追加
+			session_start();
+			$_SESSION['error_msgs'] = "データの登録に失敗しました。";
+			
 			$params = sprintf("?title=%s&detail=%s&deadline_at=%s", 
 				$title, $detail, $deadline_at);
 			header("Location: ./new.php" . $params);
 			exit;	
+		}
+
+		$history = new TodoHistory();
+		$history->setSavedData($todo->getSavedData());
+		$result = $history->save();
+
+		if ($result === false){
+			//セッションにエラーメッセージを追加
+			session_start();
+			$_SESSION['error_msgs'] = "履歴情報の登録に失敗しました（ToDoは登録されています）。";			
 		}
 
 		header("Location: ./index.php");
@@ -116,11 +131,25 @@ class TodoController{
 		$result = $todo->update();
 
 		if ($result === false){
+			session_start();
+			$_SESSION['error_msgs'] = "データの登録に失敗しました。";
+			
 			$params = sprintf("?id=%d&title=%s&detail=%s&deadline_at=%s", 
 				$id, $title, $detail, $deadline_at);
 			header("Location: ./edit.php" . $params);
 			exit;
 		}
+
+		$history = new TodoHistory();
+		$history->setSavedData($todo->getSavedData());
+		$result = $history->save();
+
+		if ($result === false){
+			//セッションにエラーメッセージを追加
+			session_start();
+			$_SESSION['error_msgs'] = "履歴情報の登録に失敗しました（ToDoは登録されています）。";			
+		}
+
 
 		header("Location: ./detail.php?id={$id}");
 	}
@@ -134,6 +163,7 @@ class TodoController{
 				sprintf ("id=%sに該当するレコードが存在しませんでした", $todo_id)
 			];
 			header("Location: ./index.php");
+			exit;
 		}
 
 		$todo = new Todo;
@@ -142,7 +172,20 @@ class TodoController{
 		if ($result === false){
 			session_start();
 			$_SESSION['error_msgs'] = [sprintf("削除に失敗しました。id=%s", $todo_id)];
+			header("Location: ./index.php");
+			exit;
 		}
+
+		$history = new TodoHistory();
+		$history->setSavedData($todo->getSavedData());
+		$result = $history->save();
+
+		if ($result === false){
+			//セッションにエラーメッセージを追加
+			session_start();
+			$_SESSION['error_msgs'] = "履歴情報の登録に失敗しました（ToDoは削除されています）。";			
+		}
+
 		header("Location: ./index.php");
 	}
 
@@ -165,6 +208,17 @@ class TodoController{
 			session_start();
 			$_SESSION['error_msgs'] = [sprintf("削除に失敗しました。id=%s", $todo_id)];
 		}
+
+		$history = new TodoHistory();
+		$history->setSavedData($todo->getSavedData());
+		$result = $history->save();
+
+		if ($result === false){
+			//セッションにエラーメッセージを追加
+			session_start();
+			$_SESSION['error_msgs'] = "履歴情報の登録に失敗しました（ToDoは登録されています）。";			
+		}
+
 		header("Location: ./index.php");
 	}
 
