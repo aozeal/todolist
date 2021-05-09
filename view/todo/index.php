@@ -30,6 +30,8 @@ session_start();
 $error_msgs = $_SESSION['error_msgs'];
 unset($_SESSION['error_msgs']);
 
+$now = new DateTime();
+
 
 ?>
 
@@ -66,6 +68,16 @@ unset($_SESSION['error_msgs']);
 						<?php echo $todo['id']; ?> : 
 						<?php echo $todo['title'];?>
 					</a>
+					<?php
+						$deadline = new DateTime($todo['deadline_at'], new DateTimeZone('Asia/Tokyo'));
+						$interval = $deadline->diff($now); ?>
+					<?php if (is_null($todo['deadline_at'])): ?>
+
+					<?php elseif ($now > $deadline): ?>
+						期限切れ
+					<?php elseif ($interval->d < 1): ?>
+						期限間近！
+					<?php endif; ?>
 					<?php if (is_null($todo['done_at'])): ?>
 						<button class="done_btn" data-id="<?php echo $todo['id'];?>">
 							完了

@@ -38,8 +38,8 @@ class Todo{
 	}
 
 	public function setDeadline($deadline_at){
-		#$this->deadline_at = $deadline_at;
-		$this->deadline_at = null;
+		$this->deadline_at = $deadline_at;
+		//$this->deadline_at = null;
 	}
 
 	public function getSavedData(){
@@ -111,35 +111,15 @@ class Todo{
 	}
 
 
-	//todo_historiesに履歴を残すためのQuery文を作る
-	private function historyQuery($data){
-		$key_str = '(todo_id';
-		$value_str = '(' . $data['id'];
-		foreach ($data as $key=>$value){
-			if ($key === "id"){
-				continue;
-			}
-
-			if (is_null($value)){ //bindParamを使うかNULLをSQL側に処理させるか
-				continue;
-			}
-			$key_str = $key_str . "," . $key;
-			$value_str = $value_str . ",'" . $value . "'";
-		}
-		$key_str = $key_str . ')';
-		$value_str = $value_str . ')';
-		return sprintf("INSERT INTO todo_histories %s VALUES %s" , $key_str, $value_str);
-	}
-
-
 	public function save(){
 		try{
 			$dbh = new PDO(DSN, USERNAME, PASSWORD);
 			$dbh->beginTransaction();
 
-			$stmt1 = $dbh->prepare("INSERT INTO todos (user_id, title, detail, created_at, updated_at) VALUES ('TestUser', :title, :detail,  NOW(), NOW());");
+			$stmt1 = $dbh->prepare("INSERT INTO todos (user_id, title, detail, deadline_at, created_at, updated_at) VALUES ('TestUser', :title, :detail, :deadline_at, NOW(), NOW());");
 			$stmt1->bindParam(':title', $this->title, PDO::PARAM_STR);
 			$stmt1->bindParam(':detail', $this->detail, PDO::PARAM_STR);
+			$stmt1->bindParam(':deadline_at', $this->deadline_at);
 			$stmt1->execute();
 
 			$todo_id = $dbh->lastInsertId();
@@ -169,9 +149,10 @@ class Todo{
 			$dbh = new PDO(DSN, USERNAME, PASSWORD);
 			$dbh->beginTransaction();
 
-			$stmt1 = $dbh->prepare("UPDATE todos SET title=:title, detail=:detail, updated_at=NOW() WHERE id=:id;");
+			$stmt1 = $dbh->prepare("UPDATE todos SET title=:title, detail=:detail, deadline_at=:deadline_at, updated_at=NOW() WHERE id=:id;");
 			$stmt1->bindParam(':title', $this->title, PDO::PARAM_STR);
 			$stmt1->bindParam(':detail', $this->detail, PDO::PARAM_STR);
+			$stmt1->bindParam(':deadline_at', $this->deadline_at);
 			$stmt1->bindParam(':id', $this->id, PDO::PARAM_INT);
 			$stmt1->execute();
 
