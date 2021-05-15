@@ -62,9 +62,11 @@ class TodoController{
 		$result = $todo->save();
 
 		if ($result === false){
+			$error_msgs = $todo->getErrorMessages();
+
 			//セッションにエラーメッセージを追加
 			session_start();
-			$_SESSION['error_msgs'] = "データの登録に失敗しました。";
+			$_SESSION['error_msgs'] = $error_msgs;
 			
 			$params = sprintf("?title=%s&detail=%s&deadline_at=%s", 
 				$title, $detail, $deadline_at);
@@ -72,15 +74,6 @@ class TodoController{
 			exit;	
 		}
 
-		$history = new TodoHistory();
-		$history->setSavedData($todo->getSavedData());
-		$result = $history->save();
-
-		if ($result === false){
-			//セッションにエラーメッセージを追加
-			session_start();
-			$_SESSION['error_msgs'] = "履歴情報の登録に失敗しました（ToDoは登録されています）。";			
-		}
 
 		header("Location: ./index.php");
 	}

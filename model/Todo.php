@@ -9,6 +9,8 @@ class Todo{
 	
 	public $savedData;
 
+	public $error_msgs;
+
 	public function getId(){
 		return $this->id;
 	}
@@ -48,6 +50,10 @@ class Todo{
 
 	public function setSavedData($data){
 		$this->savedData = $data;
+	}
+
+	public function getErrorMessages(){
+		return $this->error_msgs;
 	}
 
 
@@ -128,7 +134,15 @@ class Todo{
 			$stmt2 = $dbh->prepare($query2);
 			$stmt2->execute();
 			$result2 = $stmt2->fetch(PDO::FETCH_ASSOC);
-			$this->setSavedData($result2);
+
+			#$this->setSavedData($result2);
+			$history = new TodoHistory();
+			$history->setSavedData($result2);
+			$result3 = $history->save_h($dbh);
+
+			if (!$result3){
+				throw new PDOException($history->getErrorMessage());
+			}
 
 			$dbh->commit();
 			
@@ -136,7 +150,8 @@ class Todo{
 		} catch(PDOException $e){
 			$dbh->rollBack();
 
-			echo $e->getMessage();
+			#echo $e->getMessage();
+			$this->error_msgs[] = $e->getMessage();
 			$result = false;
 		}
 
