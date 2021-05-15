@@ -133,17 +133,6 @@ class TodoController{
 			exit;
 		}
 
-		$history = new TodoHistory();
-		$history->setSavedData($todo->getSavedData());
-		$result = $history->save();
-
-		if ($result === false){
-			//セッションにエラーメッセージを追加
-			session_start();
-			$_SESSION['error_msgs'] = "履歴情報の登録に失敗しました（ToDoは登録されています）。";			
-		}
-
-
 		header("Location: ./detail.php?id={$id}");
 	}
 
@@ -169,16 +158,6 @@ class TodoController{
 			exit;
 		}
 
-		$history = new TodoHistory();
-		$history->setSavedData($todo->getSavedData());
-		$result = $history->save();
-
-		if ($result === false){
-			//セッションにエラーメッセージを追加
-			session_start();
-			$_SESSION['error_msgs'] = "履歴情報の登録に失敗しました（ToDoは削除されています）。";			
-		}
-
 		header("Location: ./index.php");
 	}
 
@@ -200,16 +179,6 @@ class TodoController{
 		if ($result === false){
 			session_start();
 			$_SESSION['error_msgs'] = [sprintf("削除に失敗しました。id=%s", $todo_id)];
-		}
-
-		$history = new TodoHistory();
-		$history->setSavedData($todo->getSavedData());
-		$result = $history->save();
-
-		if ($result === false){
-			//セッションにエラーメッセージを追加
-			session_start();
-			$_SESSION['error_msgs'] = "履歴情報の登録に失敗しました（ToDoは登録されています）。";			
 		}
 
 		header("Location: ./index.php");
