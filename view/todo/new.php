@@ -39,13 +39,14 @@ if($_SERVER['REQUEST_METHOD'] === 'GET'){
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
 	<title>新規登録</title>
-
 </head>
 <body>
 <header>
 		<a href="./index.php">一覧</a>, 
 		<a href="./index.php?view=with_done">一覧（達成済みアリ）</a>, 
 		<a href="./new.php">新規登録</a>
+		<a href="../user/edit.php">ユーザー情報編集</a>
+		<a href="../user/logout.php">ログアウト</a>		
 	</header>
 
 	<?php if($error_msgs): ?>

@@ -7,6 +7,16 @@ require_once('../../model/TodoHistory.php');
 
 require_once('../../controller/TodoController.php');
 
+
+session_start();
+$error_msgs = $_SESSION['error_msgs'];
+unset($_SESSION['error_msgs']);
+
+if (!isset($_SESSION['user_id'])){
+	header('Location: ../user/login.php');
+	exit;
+}
+
 if (isset($_GET['action']) & $_GET['action'] === 'delete'){
 	$action = new TodoController;
 	$action->delete(); //$todo_listを返してもいいけど、内部でリダイレクトしたらいいのでは？
@@ -24,11 +34,6 @@ if (isset($_GET['view']) & $_GET['view'] === 'with_done'){
 else{
 	$todo_list = $action->index();
 }
-
-
-session_start();
-$error_msgs = $_SESSION['error_msgs'];
-unset($_SESSION['error_msgs']);
 
 $now = new DateTime();
 
@@ -50,6 +55,8 @@ $now = new DateTime();
 		<a href="./index.php">一覧</a>, 
 		<a href="./index.php?view=with_done">一覧（達成済みアリ）</a>, 
 		<a href="./new.php">新規登録</a>
+		<a href="../user/edit.php">ユーザー情報編集</a>
+		<a href="../user/logout.php">ログアウト</a>
 	</header>
 	<?php if($error_msgs): ?>
 		<div>
