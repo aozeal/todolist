@@ -11,6 +11,8 @@ class Todo{
 
 	public $error_msgs;
 
+	public $user_id;
+
 	public function getId(){
 		return $this->id;
 	}
@@ -56,6 +58,14 @@ class Todo{
 		return $this->error_msgs;
 	}
 
+	public function setUserId($user_id){
+		$this->user_id = $user_id;
+	}
+
+	public function getUserId(){
+		return $this->user_id;
+	}
+
 
 	public static function findByQuery($query){
 		$dbh = new PDO(DSN, USERNAME, PASSWORD);
@@ -71,24 +81,21 @@ class Todo{
 	}
 
 	//全レコードを取得
-	public static function findAll(){
-		#user_idは後ほど修正
-		$query = "SELECT * FROM todos WHERE user_id='TestUser' AND deleted_at IS NULL AND done_at IS NULL;";
+	public static function findAll($user_id){
+		$query = sprintf("SELECT * FROM todos WHERE user_id='%s' AND deleted_at IS NULL AND done_at IS NULL;", $user_id);
 		return self::findByQuery($query);
 	}
 
 	//達成済も含めて全レコードを取得
-	public static function findAllWithDone(){
-		#user_idは後ほど修正
-		$query = "SELECT * FROM todos WHERE user_id='TestUser' AND deleted_at IS NULL;";
+	public static function findAllWithDone($user_id){
+		$query = sprintf("SELECT * FROM todos WHERE user_id='%s' AND deleted_at IS NULL;", $user_id);
 		return self::findByQuery($query);
 	}
 	
 
 	//詳細データを取得
-	public static function findById($todo_id){
-		#user_idは後ほど修正
-		$query = "SELECT * FROM todos WHERE id=${todo_id} AND user_id='TestUser'";
+	public static function findById($todo_id, $user_id){
+		$query = sprintf("SELECT * FROM todos WHERE id=%d AND user_id='%s';", $todo_id, $user_id);
 
 		$dbh = new PDO(DSN, USERNAME, PASSWORD);
 		$stmt = $dbh->query($query);
@@ -104,8 +111,8 @@ class Todo{
 
 
 	//レコードの存在を確認
-	public static function isExistById($todo_id){
-		$query = "SELECT * FROM todos WHERE id=${todo_id}";
+	public static function isExistById($todo_id, $user_id){
+		$query = sprintf("SELECT * FROM todos WHERE id=%d AND user_id='%s';", $todo_id, $user_id);
 
 		$dbh = new PDO(DSN, USERNAME, PASSWORD);
 		$stmt = $dbh->query($query);
@@ -122,10 +129,11 @@ class Todo{
 			$dbh = new PDO(DSN, USERNAME, PASSWORD);
 			$dbh->beginTransaction();
 
-			$stmt = $dbh->prepare("INSERT INTO todos (user_id, title, detail, deadline_at, created_at, updated_at) VALUES ('TestUser', :title, :detail, :deadline_at, NOW(), NOW());");
+			$stmt = $dbh->prepare("INSERT INTO todos (user_id, title, detail, deadline_at, created_at, updated_at) VALUES (:user_id, :title, :detail, :deadline_at, NOW(), NOW());");
 			$stmt->bindParam(':title', $this->title, PDO::PARAM_STR);
 			$stmt->bindParam(':detail', $this->detail, PDO::PARAM_STR);
 			$stmt->bindParam(':deadline_at', $this->deadline_at);
+			$stmt->bindParam(':user_id', $this->user_id);
 			$stmt->execute();
 
 			$todo_id = $dbh->lastInsertId();
@@ -155,11 +163,12 @@ class Todo{
 			$dbh = new PDO(DSN, USERNAME, PASSWORD);
 			$dbh->beginTransaction();
 
-			$stmt = $dbh->prepare("UPDATE todos SET title=:title, detail=:detail, deadline_at=:deadline_at, updated_at=NOW() WHERE id=:id;");
+			$stmt = $dbh->prepare("UPDATE todos SET title=:title, detail=:detail, deadline_at=:deadline_at, updated_at=NOW() WHERE id=:id AND user_id=:user_id;");
 			$stmt->bindParam(':title', $this->title, PDO::PARAM_STR);
 			$stmt->bindParam(':detail', $this->detail, PDO::PARAM_STR);
 			$stmt->bindParam(':deadline_at', $this->deadline_at);
 			$stmt->bindParam(':id', $this->id, PDO::PARAM_INT);
+			$stmt->bindParam(':user_id', $this->user_id, PDO::PARAM_STR);
 			$stmt->execute();
 
 			$history = new TodoHistory();

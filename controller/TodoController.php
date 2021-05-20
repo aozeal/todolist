@@ -3,31 +3,43 @@
 
 class TodoController{
 	public function index(){
-		$todo_list = Todo::findAll();
+		session_start();
+		$user_id = $_SESSION['user_id'];
+
+		$todo_list = Todo::findAll($user_id);
 		
 		return $todo_list;
 	}
 
 	public function indexWithDone(){
-		$todo_list = Todo::findAllWithDone();
+		session_start();
+		$user_id = $_SESSION['user_id'];
+
+		$todo_list = Todo::findAllWithDone($user_id);
 		
 		return $todo_list;
 	}
 
 	public function detail(){
+		session_start();
+		$user_id = $_SESSION['user_id'];
+
 		$todo_id = $_GET['id'];
 
-		$todo_detail = Todo::findById($todo_id);
+		$todo_detail = Todo::findById($todo_id, $user_id);
 
 		return $todo_detail;
 	}
 
 	public function new(){
+		session_start();
+		$user_id = $_SESSION['user_id'];
 		
 		$data = array(
 			'title' => $_POST['title'],
 			'detail' => $_POST['detail'],
-			'deadline_at' => $_POST['deadline_at']
+			'deadline_at' => $_POST['deadline_at'],
+			'user_id' => $user_id
 		);
 		$title = $data['title'];
 		$detail = $data['detail'];
@@ -53,11 +65,13 @@ class TodoController{
 		$title = $validate_data['title'];
 		$detail = $validate_data['detail'];
 		$deadline_at = $validate_data['deadline_at'];
+		$user_id = $validate_data['user_id'];
 
 		$todo = new Todo;
 		$todo->setTitle($title);
 		$todo->setDetail($detail);
 		$todo->setDeadline($deadline_at);
+		$todo->setUserId($user_id);
 
 		$result = $todo->save();
 
@@ -79,8 +93,11 @@ class TodoController{
 	}
 
 	public function edit(){
+		session_start();
+		$user_id = $_SESSION['user_id'];
+
 		$todo_id = $_GET['id'];
-		$todo_detail = Todo::findById($todo_id);
+		$todo_detail = Todo::findById($todo_id, $user_id);
 
 		if ($_SERVER['REQUEST_METHOD'] !== 'POST'){
 			return $todo_detail;
@@ -90,7 +107,8 @@ class TodoController{
 			'id' => $_POST['id'],
 			'title' => $_POST['title'],
 			'detail' => $_POST['detail'],
-			'deadline_at' => $_POST['deadline_at']
+			'deadline_at' => $_POST['deadline_at'],
+			'user_id' => $user_id
 		);
 
 		$validation = new TodoValidation();
@@ -114,12 +132,14 @@ class TodoController{
 		$title = $validate_data['title'];
 		$detail = $validate_data['detail'];
 		$deadline_at = $validate_data['deadline_at'];
+		$user_id = $validate_data['user_id'];
 
 		$todo = new Todo;
 		$todo->setId($id);
 		$todo->setTitle($title);
 		$todo->setDetail($detail);
 		$todo->setDeadline($deadline_at);
+		$todo->setUserId($user_id);
 
 		$result = $todo->update();
 
@@ -137,12 +157,15 @@ class TodoController{
 	}
 
 	public function delete(){
+		session_start();
+		$user_id = $_SESSION['user_id'];
+
 		$todo_id = $_GET['todo_id'];
-		$is_exist = Todo::isExistById($todo_id);
+		$is_exist = Todo::isExistById($todo_id, $user_id);
 		if(!$is_exist){
 			session_start();
 			$_SESSION['error_msgs'] = [
-				sprintf ("id=%sに該当するレコードが存在しませんでした", $todo_id)
+				sprintf ("id=%s, user_id=%sに該当するレコードが存在しませんでした", $todo_id, $user_ie)
 			];
 			header("Location: ./index.php");
 			exit;
@@ -150,6 +173,7 @@ class TodoController{
 
 		$todo = new Todo;
 		$todo->setId($todo_id);
+		$todo->setUserId($user_id);
 		$result = $todo->delete();
 		if ($result === false){
 			session_start();
@@ -163,14 +187,18 @@ class TodoController{
 
 
 	public function done(){
+		session_start();
+		$user_id = $_SESSION['user_id'];
+
 		$todo_id = $_GET['todo_id'];
-		$is_exist = Todo::isExistById($todo_id);
+		$is_exist = Todo::isExistById($todo_id, $user_id);
 		if(!$is_exist){
 			session_start();
 			$_SESSION['error_msgs'] = [
-				sprintf ("id=%sに該当するレコードが存在しませんでした", $todo_id)
+				sprintf ("id=%s, user_id=%sに該当するレコードが存在しませんでした", $todo_id, $user_id)
 			];
 			header("Location: ./index.php");
+			exit;
 		}
 
 		$todo = new Todo;
