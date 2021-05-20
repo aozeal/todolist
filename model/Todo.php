@@ -117,10 +117,14 @@ class Todo{
 		$dbh = new PDO(DSN, USERNAME, PASSWORD);
 		$stmt = $dbh->query($query);
 
-		if(!$stmt){
-			return false;
+		if($stmt){
+			$result = $stmt->fetch(PDO::FETCH_ASSOC);
 		}
-		return true;
+		else{
+			$result = false;
+		}
+
+		return $result;
 	}
 
 

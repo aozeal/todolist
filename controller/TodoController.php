@@ -192,6 +192,7 @@ class TodoController{
 
 		$todo_id = $_GET['todo_id'];
 		$is_exist = Todo::isExistById($todo_id, $user_id);
+
 		if(!$is_exist){
 			session_start();
 			$_SESSION['error_msgs'] = [
