@@ -72,13 +72,31 @@ class User{
 
 
 	public function update(){
+		try{
+			$dbh = new PDO(DSN, USERNAME, PASSWORD);
+			$dbh->beginTransaction();
 
+			$stmt = $dbh->prepare("UPDATE users SET name=:name, detail=:detail, encrypted_password=:encrypted_password, updated_at=NOW() WHERE id=:id;");
+			$stmt->bindParam(':name', $this->data['name'], PDO::PARAM_STR);
+			$stmt->bindParam(':detail', $this->data['detail'], PDO::PARAM_STR);
+			$stmt->bindParam(':encrypted_password', $this->data['encrypted_password'], PDO::PARAM_STR);
+			$stmt->bindParam(':id', $this->data['id'], PDO::PARAM_STR);
+			$result = $stmt->execute();
+
+			$dbh->commit();
+
+			$result=true;
+
+		} catch(PDOException $e){
+			$dbh->rollBack();
+
+			$this->error_msgs[] = $e->getMessage();
+			$result = false;
+		}
+
+		return $result;
 	}
 
-
-	public function delete(){
-
-	}
 
 
 }

@@ -28,6 +28,11 @@ class TodoController{
 
 		$todo_detail = Todo::findById($todo_id, $user_id);
 
+		if (!$todo_detail){
+			header('Location: ../error/404.php');
+			exit();
+		}
+
 		return $todo_detail;
 	}
 
@@ -98,6 +103,11 @@ class TodoController{
 
 		$todo_id = $_GET['id'];
 		$todo_detail = Todo::findById($todo_id, $user_id);
+
+		if (!$todo_detail){
+			header("Location: ../error/404.php");
+			exit;
+		}
 
 		if ($_SERVER['REQUEST_METHOD'] !== 'POST'){
 			return $todo_detail;

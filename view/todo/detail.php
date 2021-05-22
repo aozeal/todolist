@@ -15,6 +15,12 @@ session_start();
 $error_msgs = $_SESSION['error_msgs'];
 unset($_SESSION['error_msgs']);
 
+if (!isset($_SESSION['user_id'])){
+	header('Location: ../user/login.php');
+	exit;
+}
+$user_name = $_SESSION['user_name'];
+
 ?>
 
 </!DOCTYPE html>
@@ -31,7 +37,7 @@ unset($_SESSION['error_msgs']);
 		<a href="./index.php">一覧</a>, 
 		<a href="./index.php?view=with_done">一覧（達成済みアリ）</a>, 
 		<a href="./new.php">新規登録</a>
-		<a href="../user/edit.php">ユーザー情報編集</a>
+		<a href="../user/detail.php"><?php echo $user_name ?>さん</a>
 		<a href="../user/logout.php">ログアウト</a>
 	</header>
 	<?php if($error_msgs): ?>
