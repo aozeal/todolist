@@ -7,15 +7,14 @@ require_once('../../model/TodoHistory.php');
 
 require_once('../../controller/TodoController.php');
 
+require_once('../../service/auth/Auth.php');
+
 
 session_start();
 $error_msgs = $_SESSION['error_msgs'];
 unset($_SESSION['error_msgs']);
 
-if (!isset($_SESSION['user_id'])){
-	header('Location: ../user/login.php');
-	exit;
-}
+Auth::checkLoginSession();
 $user_name = $_SESSION['user_name'];
 
 

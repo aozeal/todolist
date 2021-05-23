@@ -9,6 +9,8 @@ require_once('../../controller/TodoController.php');
 
 require_once('../../validation/TodoValidation.php');
 
+require_once('../../service/auth/Auth.php');
+
 $action = new TodoController;
 $todo_detail = $action->edit();
 
@@ -22,10 +24,7 @@ if ($error_msgs){
 	$todo_detail['deadline_at'] = $_GET['deadline_at'];
 }
 
-if (!isset($_SESSION['user_id'])){
-	header('Location: ../user/login.php');
-	exit;
-}
+Auth::checkLoginSession();
 $user_name = $_SESSION['user_name'];
 
 ?>

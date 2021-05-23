@@ -9,6 +9,8 @@ require_once('../../controller/TodoController.php');
 
 require_once('../../validation/TodoValidation.php');
 
+require_once('../../service/auth/Auth.php');
+
 $title='';
 $detail='';
 $deadline_at = '';
@@ -23,10 +25,7 @@ $error_msgs = $_SESSION['error_msgs'];
 //セッション削除
 unset($_SESSION['error_msgs']);
 
-if (!isset($_SESSION['user_id'])){
-	header('Location: ../user/login.php');
-	exit;
-}
+Auth::checkLoginSession();
 $user_name = $_SESSION['user_name'];
 
 if($_SERVER['REQUEST_METHOD'] === 'GET'){
