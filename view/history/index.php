@@ -2,10 +2,9 @@
 
 require_once('../../config/database.php');
 
-require_once('../../model/Todo.php');
 require_once('../../model/TodoHistory.php');
-
-require_once('../../controller/TodoController.php');
+require_once('../../controller/TodoHistoryController.php');
+require_once('../../validation/TodoHistoryValidation.php');
 
 require_once('../../service/auth/Auth.php');
 
@@ -17,27 +16,11 @@ unset($_SESSION['error_msgs']);
 Auth::checkLoginSession();
 $user_name = $_SESSION['user_name'];
 
+$action = new TodoHistoryController;
+$todo_list = $action->index();
 
-if (isset($_GET['action']) & $_GET['action'] === 'delete'){
-	$action = new TodoController;
-	$action->delete(); //$todo_listを返してもいいけど、内部でリダイレクトしたらいいのでは？
-}
-
-if (isset($_GET['action']) & $_GET['action'] === 'done'){
-	$action = new TodoController;
-	$action->done();
-}
-
-$action = new TodoController;
-if (isset($_GET['view']) & $_GET['view'] === 'with_done'){
-	$todo_list = $action->indexWithDone();
-}
-else{
-	$todo_list = $action->index();
-}
-
-$now = new DateTime();
-
+$target_date_str = $action->getTargetDate();
+$target_date = new DateTime($target_date_str);
 
 ?>
 
@@ -47,16 +30,13 @@ $now = new DateTime();
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
-	<title>TODOリスト</title>
+	<title>TODOリスト履歴</title>
 	<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 
 </head>
 <body>
 	<header>
-		<a href="./index.php">一覧</a>, 
-		<a href="./index.php?view=with_done">一覧（達成済みアリ）</a>, 
-		<a href="./new.php">新規登録</a>
-		<a href="../history/index.php">履歴</a>
+		<a href="../todo/index.php">履歴モード終了</a>, 
 		<a href="../user/detail.php"><?php echo $user_name ?>さん</a>
 		<a href="../user/logout.php">ログアウト</a>
 	</header>
@@ -70,31 +50,35 @@ $now = new DateTime();
 	<?php endif; ?>
 
 	<ul>
+	<div>日時（空の場合は現在の時刻）</div>
+		<form action="./index.php" method="GET">
+		<div><input type="datetime" name="target_date" placeholder="20XX-XX-XX XX:XX:XX" value="<?php echo $target_date_str; ?>"></div>
+		<button type="submit">Go!</button>
+		</form>
+
+		<div><?php echo $target_date_str; ?></div>
+
 		<?php if($todo_list):?>
 			<?php foreach($todo_list as $todo):?>
+				<?php if ($todo['deleted_at']){continue;}?>
+				<?php if ($todo['done_at']){continue;}?>
 				<li>
-					<a href="./detail.php?id=<?php echo $todo['id']; ?>">
+					<a href="./detail.php?id=
+						<?php echo $todo['id'] . "&target_date=" . $target_date_str; ?>
+						">
 						<?php echo $todo['id']; ?> : 
 						<?php echo $todo['title'];?>
 					</a>
 					<?php
 						$deadline = new DateTime($todo['deadline_at'], new DateTimeZone('Asia/Tokyo'));
-						$interval = $deadline->diff($now); ?>
+						$interval = $deadline->diff($target_date); ?>
 					<?php if (is_null($todo['deadline_at'])): ?>
 
-					<?php elseif ($now > $deadline): ?>
+					<?php elseif ($target_date > $deadline): ?>
 						期限切れ
 					<?php elseif ($interval->d < 1): ?>
 						期限間近！
 					<?php endif; ?>
-					<?php if (is_null($todo['done_at'])): ?>
-						<button class="done_btn" data-id="<?php echo $todo['id'];?>">
-							完了
-						</button>
-					<?php endif; ?>
-					<button class="delete_btn" data-id="<?php echo $todo['id'];?>">
-						削除
-					</button>
 				</li>
 			<?php endforeach;?>
 		<?php else:?>
