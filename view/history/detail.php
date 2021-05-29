@@ -2,20 +2,12 @@
 
 require_once('../../config/database.php');
 
-require_once('../../model/Todo.php');
 require_once('../../model/TodoHistory.php');
-
-require_once('../../controller/TodoController.php');
+require_once('../../controller/TodoHistoryController.php');
+require_once('../../validation/TodoHistoryValidation.php');
 
 require_once('../../service/auth/Auth.php');
 
-
-$action = new TodoController;
-$todo_detail = $action->detail();
-if (!$todo_detail){
-	header('Location: ../error/404.php');
-	exit();
-}
 
 session_start();
 $error_msgs = $_SESSION['error_msgs'];
@@ -23,6 +15,17 @@ unset($_SESSION['error_msgs']);
 
 Auth::checkLoginSession();
 $user_name = $_SESSION['user_name'];
+
+$action = new TodoHistoryController;
+$todo_detail = $action->detail();
+if (!$todo_detail){
+	header('Location: ../error/404.php');
+	exit();
+}
+
+$target_date_str = $action->getTargetDate();
+$target_date = new DateTime($target_date_str);
+
 
 ?>
 
@@ -32,14 +35,13 @@ $user_name = $_SESSION['user_name'];
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
-	<title>TODO項目詳細</title>
+	<title>TODO項目詳細（履歴）</title>
 
 </head>
 <body>
 	<header>
-		<a href="./index.php">一覧</a>, 
-		<a href="./index.php?view=with_done">一覧（達成済みアリ）</a>, 
-		<a href="./new.php">新規登録</a>
+		<a href="../todo/index.php">履歴モード終了</a>, 
+		<a href="./index.php?target_date='<?php echo $target_date_str;?>'">履歴一覧</a>, 
 		<a href="../user/detail.php"><?php echo $user_name ?>さん</a>
 		<a href="../user/logout.php">ログアウト</a>
 	</header>
@@ -51,6 +53,8 @@ $user_name = $_SESSION['user_name'];
 			<?php endforeach; ?>
 		</div>
 	<?php endif; ?>
+	<div>日時（空の場合は現在の時刻）</div>
+	<div><?php echo $target_date_str; ?></div>
 
 	<table>
 		<thead>
@@ -92,9 +96,6 @@ $user_name = $_SESSION['user_name'];
 		<?php elseif ($interval->d < 1): ?>
 			期限間近！
 		<?php endif; ?>
-	</div>
-	<div>
-		<button><a href="./edit.php?id=<?php echo $todo_detail['id']; ?>">編集</a></button>
 	</div>
 
 </body>

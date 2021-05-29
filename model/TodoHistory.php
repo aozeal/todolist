@@ -7,6 +7,9 @@ class TodoHistory{
 	public function getErrorMessage(){
 		return $this->error_msg;
 	}
+	public function getErrorMessages(){
+		return [$error_msg];
+	}
 
 	public function save($todo_id, $dbh){
 		try{
@@ -33,6 +36,35 @@ class TodoHistory{
 			$this->error_msg = $e->getMessage();
 			$result = false;
 		}
+
+		return $result;
+	}
+
+	public static function findAll($user_id, $target_date){
+		$dbh = new PDO(DSN, USERNAME, PASSWORD);
+		$stmt = $dbh->prepare("select * from todo_histories as h1 where  h1.updated_at = (
+			select MAX(updated_at) from todo_histories as h2
+			where h1.todo_id = h2.todo_id
+			and h2.updated_at < :updated_at
+			and user_id = :user_id
+		);");
+		$stmt->bindParam(':user_id', $user_id, PDO::PARAM_STR);
+		$stmt->bindParam(':updated_at', $target_date);
+		$stmt->execute();
+		
+		$result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+		return $result;
+	}
+
+	public static function findById($history_id, $user_id){
+		$dbh = new PDO(DSN, USERNAME, PASSWORD);
+		$stmt = $dbh->prepare("SELECT * FROM todo_histories WHERE id=:id AND user_id=:user_id;");
+		$stmt->bindParam(':user_id', $user_id, PDO::PARAM_STR);
+		$stmt->bindParam(':id', $history_id, PDO::PARAM_INT);
+		$stmt->execute();
+
+		$result = $stmt->fetch(PDO::FETCH_ASSOC);
 
 		return $result;
 	}

@@ -201,7 +201,7 @@ class Todo{
 			$dbh = new PDO(DSN, USERNAME, PASSWORD);
 
 			$dbh->beginTransaction();
-			$query = sprintf("UPDATE todos SET deleted_at=NOW() WHERE id=%d;", $this->id);
+			$query = sprintf("UPDATE todos SET deleted_at=NOW(), updated_at=NOW() WHERE id=%d;", $this->id);
 
 			$stmt = $dbh->prepare($query);
 			$stmt->execute();
@@ -231,7 +231,7 @@ class Todo{
 			$dbh = new PDO(DSN, USERNAME, PASSWORD);
 
 			$dbh->beginTransaction();
-			$query = sprintf("UPDATE todos SET done_at=NOW() WHERE id=%d;", $this->id);
+			$query = sprintf("UPDATE todos SET done_at=NOW(), updated_at=NOW() WHERE id=%d;", $this->id);
 
 			$stmt = $dbh->prepare($query);
 			$stmt->execute();

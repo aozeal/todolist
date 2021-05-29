@@ -13,6 +13,10 @@ require_once('../../service/auth/Auth.php');
 
 $action = new TodoController;
 $todo_detail = $action->edit();
+if (!$todo_detail){
+	header('Location: ../error/404.php');
+	exit();
+}
 
 session_start();
 $error_msgs = $_SESSION['error_msgs'];
