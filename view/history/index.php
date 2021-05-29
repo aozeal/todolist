@@ -20,7 +20,7 @@ $action = new TodoHistoryController;
 $todo_list = $action->index();
 
 $target_date_str = $action->getTargetDate();
-$target_date = new DateTime($target_date_str);
+$target_date = new DateTime($target_date_str, new DateTimeZone('Asia/Tokyo'));
 
 ?>
 

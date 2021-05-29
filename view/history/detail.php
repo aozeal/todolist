@@ -24,7 +24,7 @@ if (!$todo_detail){
 }
 
 $target_date_str = $action->getTargetDate();
-$target_date = new DateTime($target_date_str);
+$target_date = new DateTime($target_date_str, new DateTimeZone('Asia/Tokyo'));
 
 
 ?>
@@ -84,14 +84,13 @@ $target_date = new DateTime($target_date_str);
 	</table>
 	<div>
 		<?php
-			$now = new DateTime('Asia/Tokyo');
 			$deadline = new DateTime($todo_detail['deadline_at'], new DateTimeZone('Asia/Tokyo'));
-			$interval = $deadline->diff($now); ?>
+			$interval = $deadline->diff($target_date); ?>
 		<?php if (!is_null($todo_detail['done_at'])): ?>
 			達成済み
 		<?php elseif (is_null($todo_detail['deadline_at'])): ?>
 
-		<?php elseif ($now > $deadline): ?>
+		<?php elseif ($target_date > $deadline): ?>
 			期限切れ
 		<?php elseif ($interval->d < 1): ?>
 			期限間近！
