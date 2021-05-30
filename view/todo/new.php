@@ -25,8 +25,7 @@ $error_msgs = $_SESSION['error_msgs'];
 //セッション削除
 unset($_SESSION['error_msgs']);
 
-Auth::checkLoginSession();
-$user_name = $_SESSION['user_name'];
+$user_name = Auth::getUserName();;
 
 if($_SERVER['REQUEST_METHOD'] === 'GET'){
 	$title = $_GET['title'];

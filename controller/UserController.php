@@ -31,9 +31,7 @@ class UserController{
 
 		$valid_data = $validation->getValidData();
 
-		session_start();
-		$_SESSION['user_id'] = $valid_data['id'];
-		$_SESSION['user_name'] = $valid_data['name'];
+		Auth::setLoginSession($valid_data['id'], $valid_data['name']);
 
 		header("Location: ../todo/index.php");		
 		exit;	
@@ -86,9 +84,7 @@ class UserController{
 			exit;	
 		}
 
-		session_start();
-		$_SESSION['user_id'] = $data['id'];
-		$_SESSION['user_name'] = $data['name'];
+		Auth::setLoginSession($data['id'], $data['name']);
 
 		header("Location: ../todo/index.php");
 		exit;	
@@ -96,8 +92,7 @@ class UserController{
 
 
 	public function detail(){
-		session_start();
-		$user_id = $_SESSION['user_id'];
+		$user_id = Auth::getUserId();
 
 		$user_detail = User::findById($user_id);
 
@@ -106,8 +101,7 @@ class UserController{
 	}
 
 	public function edit(){
-		session_start();
-		$user_id = $_SESSION['user_id'];
+		$user_id = Auth::getUserId();
 
 		$user_detail = User::findById($user_id);
 
@@ -154,9 +148,7 @@ class UserController{
 			exit;
 		}
 
-		session_start();
-		$_SESSION['user_id'] = $data['id'];
-		$_SESSION['user_name'] = $data['name'];
+		Auth::setLoginSession($data['id'], $data['name']);
 
 		header("Location: ./detail.php");
 		exit;	

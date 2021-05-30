@@ -21,8 +21,7 @@ session_start();
 $error_msgs = $_SESSION['error_msgs'];
 unset($_SESSION['error_msgs']);
 
-Auth::checkLoginSession();
-$user_name = $_SESSION['user_name'];
+$user_name = Auth::getUserName();;
 
 ?>
 

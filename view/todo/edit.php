@@ -28,8 +28,7 @@ if ($error_msgs){
 	$todo_detail['deadline_at'] = $_GET['deadline_at'];
 }
 
-Auth::checkLoginSession();
-$user_name = $_SESSION['user_name'];
+$user_name = Auth::getUserName();;
 
 ?>
 

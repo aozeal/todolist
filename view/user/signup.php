@@ -6,6 +6,7 @@ require_once('../../controller/UserController.php');
 require_once('../../validation/UserValidation.php');
 
 require_once('../../model/User.php');
+require_once('../../service/auth/Auth.php');
 
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
 

@@ -3,8 +3,7 @@
 
 class TodoController{
 	public function index(){
-		session_start();
-		$user_id = $_SESSION['user_id'];
+		$user_id = Auth::getUserId();
 
 		$todo_list = Todo::findAll($user_id);
 		
@@ -12,8 +11,7 @@ class TodoController{
 	}
 
 	public function indexWithDone(){
-		session_start();
-		$user_id = $_SESSION['user_id'];
+		$user_id = Auth::getUserId();
 
 		$todo_list = Todo::findAllWithDone($user_id);
 		
@@ -21,8 +19,7 @@ class TodoController{
 	}
 
 	public function detail(){
-		session_start();
-		$user_id = $_SESSION['user_id'];
+		$user_id = Auth::getUserId();
 
 		$todo_id = $_GET['id'];
 
@@ -32,8 +29,7 @@ class TodoController{
 	}
 
 	public function new(){
-		session_start();
-		$user_id = $_SESSION['user_id'];
+		$user_id = Auth::getUserId();
 		
 		$data = array(
 			'title' => $_POST['title'],
@@ -93,8 +89,7 @@ class TodoController{
 	}
 
 	public function edit(){
-		session_start();
-		$user_id = $_SESSION['user_id'];
+		$user_id = Auth::getUserId();
 
 		$todo_id = $_GET['id'];
 		$todo_detail = Todo::findById($todo_id, $user_id);
@@ -158,8 +153,7 @@ class TodoController{
 	}
 
 	public function delete(){
-		session_start();
-		$user_id = $_SESSION['user_id'];
+		$user_id = Auth::getUserId();
 
 		$todo_id = $_GET['todo_id'];
 		$is_exist = Todo::isExistById($todo_id, $user_id);
@@ -188,8 +182,7 @@ class TodoController{
 
 
 	public function done(){
-		session_start();
-		$user_id = $_SESSION['user_id'];
+		$user_id = Auth::getUserId();
 
 		$todo_id = $_GET['todo_id'];
 		$is_exist = Todo::isExistById($todo_id, $user_id);

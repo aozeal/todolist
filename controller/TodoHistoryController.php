@@ -10,9 +10,7 @@ class TodoHistoryController{
 	}
 
 	public function index(){
-		session_start();
-		$user_id = $_SESSION['user_id'];
-
+		$user_id = Auth::getUserId();
 
 		$input_date = $_GET['target_date'];
 
@@ -34,8 +32,7 @@ class TodoHistoryController{
 
 
 	public function detail(){
-		session_start();
-		$user_id = $_SESSION['user_id'];
+		$user_id = Auth::getUserId();
 
 		$history_id = $_GET['id'];
 		$input_date = $_GET['target_date'];
