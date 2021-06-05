@@ -10,6 +10,8 @@ require_once('../../controller/TodoController.php');
 require_once('../../validation/TodoValidation.php');
 
 require_once('../../service/auth/Auth.php');
+require_once('../../service/error/ErrorMsgs.php');
+
 
 $action = new TodoController;
 $todo_detail = $action->edit();
@@ -18,9 +20,7 @@ if (!$todo_detail){
 	exit();
 }
 
-session_start();
-$error_msgs = $_SESSION['error_msgs'];
-unset($_SESSION['error_msgs']);
+$error_msgs = ErrorMsgs::getErrorMessages();
 
 if ($error_msgs){
 	$todo_detail['title'] = $_GET['title'];

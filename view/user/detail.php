@@ -6,14 +6,14 @@ require_once('../../model/User.php');
 
 require_once('../../controller/UserController.php');
 require_once('../../service/auth/Auth.php');
+require_once('../../service/error/ErrorMsgs.php');
 
 $action = new UserController;
 $user_detail = $action->detail();
 
 
-session_start();
-$error_msgs = $_SESSION['error_msgs'];
-unset($_SESSION['error_msgs']);
+$error_msgs = ErrorMsgs::getErrorMessages();
+
 #$user_name = $_SESSION['user_name'];
 $user_name = Auth::getUserName();
 

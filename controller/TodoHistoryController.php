@@ -12,14 +12,20 @@ class TodoHistoryController{
 	public function index(){
 		$user_id = Auth::getUserId();
 
-		$input_date = $_GET['target_date'];
+		$input_date = '';
+		if (isset($_GET['target_date'])){
+			$input_date = $_GET['target_date'];
+		}
 
 		$validation = new TodoHistoryValidation;
 		$validation->setTargetDate($input_date);
 		$result = $validation->check();
 
 		if (!$result){
-			session_start();
+
+			if (!isset($_SESSION)){
+				session_start();
+			}
 			$_SESSION['error_msgs'] = $validation->getErrorMessages();
 		}
 

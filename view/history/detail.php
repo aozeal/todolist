@@ -7,11 +7,10 @@ require_once('../../controller/TodoHistoryController.php');
 require_once('../../validation/TodoHistoryValidation.php');
 
 require_once('../../service/auth/Auth.php');
+require_once('../../service/error/ErrorMsgs.php');
 
 
-session_start();
-$error_msgs = $_SESSION['error_msgs'];
-unset($_SESSION['error_msgs']);
+$error_msgs = ErrorMsgs::getErrorMessages();
 
 $user_name = Auth::getUserName();;
 

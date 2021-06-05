@@ -10,6 +10,7 @@ require_once('../../controller/TodoController.php');
 require_once('../../validation/TodoValidation.php');
 
 require_once('../../service/auth/Auth.php');
+require_once('../../service/error/ErrorMsgs.php');
 
 $title='';
 $detail='';
@@ -20,17 +21,24 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
 	$action->new();
 }
 
-session_start();
-$error_msgs = $_SESSION['error_msgs'];
-//セッション削除
-unset($_SESSION['error_msgs']);
+$error_msgs = ErrorMsgs::getErrorMessages();
 
 $user_name = Auth::getUserName();;
 
+$title = '';
+$detail = '';
+$deadline_at = '';
+
 if($_SERVER['REQUEST_METHOD'] === 'GET'){
-	$title = $_GET['title'];
-	$detail = $_GET['detail'];
-	$deadline_at = $_GET['deadline_at'];
+	if (isset($_GET['title'])){
+		$title = $_GET['title'];
+	}
+	if (isset($_GET['detail'])){
+		$title = $_GET['detail'];
+	}
+	if (isset($_GET['deadline_at'])){
+		$title = $_GET['deadline_at'];
+	}
 }
 
 

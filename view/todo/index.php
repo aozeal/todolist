@@ -8,27 +8,27 @@ require_once('../../model/TodoHistory.php');
 require_once('../../controller/TodoController.php');
 
 require_once('../../service/auth/Auth.php');
+require_once('../../service/error/ErrorMsgs.php');
 
 
-session_start();
-$error_msgs = $_SESSION['error_msgs'];
-unset($_SESSION['error_msgs']);
+$error_msgs = ErrorMsgs::getErrorMessages();
 
 $user_name = Auth::getUserName();
 
 
-if (isset($_GET['action']) & $_GET['action'] === 'delete'){
+
+if (isset($_GET['action']) && $_GET['action'] === 'delete'){
 	$action = new TodoController;
 	$action->delete(); //$todo_listを返してもいいけど、内部でリダイレクトしたらいいのでは？
 }
 
-if (isset($_GET['action']) & $_GET['action'] === 'done'){
+if (isset($_GET['action']) && $_GET['action'] === 'done'){
 	$action = new TodoController;
 	$action->done();
 }
 
 $action = new TodoController;
-if (isset($_GET['view']) & $_GET['view'] === 'with_done'){
+if (isset($_GET['view']) && $_GET['view'] === 'with_done'){
 	$todo_list = $action->indexWithDone();
 }
 else{
