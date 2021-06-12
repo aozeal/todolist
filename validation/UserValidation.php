@@ -53,9 +53,11 @@ class UserValidation{
 
     public function checkSignup(){
 
+        /*
         if (!ctype_alnum($this->id)){
             $this->error_msgs[] = 'ユーザーIDは半角英数にしてください。';
         }
+        */
         if (mb_strlen($this->id) < UserValidation::USER_ID_MIN_LENGTH){
             $this->error_msgs[] = 'ユーザーIDは6文字以上にしてください。';
         }

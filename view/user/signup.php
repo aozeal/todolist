@@ -2,17 +2,15 @@
 
 require_once('../../config/database.php');
 
-require_once('../../controller/UserController.php');
-require_once('../../validation/UserValidation.php');
-
 require_once('../../model/User.php');
-require_once('../../service/auth/Auth.php');
+
+require_once('../../service/auth/MailRegister.php');
 require_once('../../service/error/ErrorMsgs.php');
 
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
 
-	$action = new UserController;
-	$action->signup();
+	$action = new MailRegister;
+	$action->register();
 }
 
 $error_msgs = ErrorMsgs::getErrorMessages();
@@ -25,7 +23,7 @@ $error_msgs = ErrorMsgs::getErrorMessages();
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
-	<title>ユーザー登録</title>
+	<title>メールアドレス登録</title>
 
 </head>
 <body>
@@ -43,12 +41,8 @@ $error_msgs = ErrorMsgs::getErrorMessages();
 	<?php endif; ?>
 
 	<form action="./signup.php" method="POST">
-		<div>ユーザーID : <input type="text" name="user_id"></div>
-		<div>パスワード：<input type="password" name="password1"></div>		
-		<div>パスワード（確認用）：<input type="password" name="password2"></div>
-		<div>ユーザー名 : <input type="text" name="name"></div>
-		<div>詳細 : <textarea name="detail"></textarea></div>
-		<button type="submit">ユーザー登録</button>
+		<div>メールアドレス（ユーザーID） : <input type="text" name="user_id"></div>
+		<button type="submit">メールアドレス登録</button>
 	</form>
 
 

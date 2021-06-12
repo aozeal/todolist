@@ -39,18 +39,33 @@ class UserController{
 
 
 	public function signup(){
-		$user_id = $_POST['user_id'];
+		//$user_id = $_POST['user_id'];
+		$user_id = MailRegister::getRegisterMail();
 		$result = User::findById($user_id);
 
 		if ($result !== false){
-			session_start();
+			if (!isset($_SESSION)){
+				session_start();
+			}
 			$_SESSION['error_msgs'] = ['登録済のユーザーIDです。'];
 			header("Location: ./signup.php");
 			exit;
 		}
 
+		$token = MailRegister::getRegisterToken();
+		$result = MailRegister::validateToken($token);
+		if (!$result){
+			if (!isset($_SESSION)){
+				session_start();
+			}
+			$_SESSION['error_msgs'] = ['URLが不正です。'];
+			header("Location: ./signup.php");
+			exit;
+		}
+
 		$validation = new UserValidation;
-		$validation->setId($_POST['user_id']);
+		//$validation->setId($_POST['user_id']);
+		$validation->setId($user_id);
 		$validation->setPassword1($_POST['password1']);
 		$validation->setPassword2($_POST['password2']);
 		$validation->setName($_POST['name']);
@@ -59,9 +74,11 @@ class UserController{
 		$result = $validation->checkSignup();
 
 		if (!$result){
-			session_start();
+			if (!isset($_SESSION)){
+				session_start();
+			}
 			$_SESSION['error_msgs'] = $validation->getErrorMessages();
-			header("Location: ./signup.php");
+			header("Location: ./signup_form.php&" . $token);
 			exit;
 		}
 
@@ -78,13 +95,16 @@ class UserController{
 			session_start();
 			$_SESSION['error_msgs'] = $error_msgs;
 			
-			$params = sprintf("?user_id=%s&name=%s&detail=%s", 
-				$data['id'], $data['name'], $data['detail']);
-			header("Location: ./signup.php" . $params);
+			$params = sprintf("?token=%s&user_id=%s&name=%s&detail=%s", 
+				$token, $data['id'], $data['name'], $data['detail']);
+			header("Location: ./signup_form.php" . $params);
 			exit;	
 		}
 
 		Auth::setLoginSession($data['id'], $data['name']);
+
+		//本登録されたので仮登録中のメールアドレスを削除
+		MailRegister::registrationFinished();
 
 		header("Location: ../todo/index.php");
 		exit;	
