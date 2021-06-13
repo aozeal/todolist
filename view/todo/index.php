@@ -14,6 +14,7 @@ require_once('../../service/error/ErrorMsgs.php');
 $error_msgs = ErrorMsgs::getErrorMessages();
 
 $user_name = Auth::getUserName();
+$icon_path = Auth::getIconPath();
 
 
 
@@ -56,7 +57,12 @@ $now = new DateTime();
 		<a href="./index.php?view=with_done">一覧（達成済みアリ）</a>, 
 		<a href="./new.php">新規登録</a>
 		<a href="../history/index.php">履歴</a>
-		<a href="../user/detail.php"><?php echo $user_name ?>さん</a>
+		<a href="../user/detail.php">
+			<?php if ($icon_path): ?>
+				<img style="height:30px;" src="<?php echo $icon_path; ?>">
+			<?php endif; ?>
+			<?php echo $user_name ?>さん
+		</a>
 		<a href="../user/logout.php">ログアウト</a>
 	</header>
 	<?php if($error_msgs): ?>

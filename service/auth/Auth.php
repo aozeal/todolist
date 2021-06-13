@@ -1,6 +1,8 @@
 <?php
 
 class Auth{
+    public const DEFAULT_ICON_PATH = "../../images/avatar/default.png";
+
     static public function logout(){
         if (!isset($_SESSION)){
             session_start();
@@ -14,12 +16,13 @@ class Auth{
         exit;
     }
 
-    static public function setLoginSession($user_id, $user_name){
+    static public function setLoginSession($user_id, $user_name, $icon_path){
         if (!isset($_SESSION)){
             session_start();
         }
 		$_SESSION['user_id'] = $user_id;
 		$_SESSION['user_name'] = $user_name;
+        $_SESSION['icon_path'] = $icon_path;
     }
 
 
@@ -43,6 +46,16 @@ class Auth{
             exit;
         }
         return $_SESSION['user_id'];
+    }
+
+    static public function getIconPath(){
+        if (!isset($_SESSION)){
+            session_start();
+        }
+        if (!isset($_SESSION['icon_path'])){
+            return Auth::DEFAULT_ICON_PATH;
+        }
+        return $_SESSION['icon_path'];
     }
 }
 

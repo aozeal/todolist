@@ -11,7 +11,8 @@ require_once('../../service/error/ErrorMsgs.php');
 
 $error_msgs = ErrorMsgs::getErrorMessages();
 
-$user_name = Auth::getUserName();;
+$user_name = Auth::getUserName();
+$icon_path = Auth::getIconPath();
 
 $action = new TodoHistoryController;
 $todo_list = $action->index();
@@ -34,7 +35,12 @@ $target_date = new DateTime($target_date_str, new DateTimeZone('Asia/Tokyo'));
 <body>
 	<header>
 		<a href="../todo/index.php">履歴モード終了</a>, 
-		<a href="../user/detail.php"><?php echo $user_name ?>さん</a>
+		<a href="../user/detail.php">
+		<?php if ($icon_path): ?>
+			<img style="height:30px;" src="<?php echo $icon_path; ?>">
+			<?php endif; ?>
+			<?php echo $user_name ?>さん
+		</a>
 		<a href="../user/logout.php">ログアウト</a>
 	</header>
 	<?php if($error_msgs): ?>

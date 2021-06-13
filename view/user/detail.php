@@ -16,6 +16,7 @@ $error_msgs = ErrorMsgs::getErrorMessages();
 
 #$user_name = $_SESSION['user_name'];
 $user_name = Auth::getUserName();
+$icon_path = Auth::getIconPath();
 
 if($error_msgs){
 	$user_detail['name'] = $_GET['name'];
@@ -40,7 +41,12 @@ if($error_msgs){
 		<a href="../todo/index.php">一覧</a>, 
 		<a href="../todo/index.php?view=with_done">一覧（達成済みアリ）</a>, 
 		<a href="../todo/new.php">新規登録</a>
-		<a href="./detail.php"><?php echo $user_name ?>さん</a>
+		<a href="./detail.php">
+			<?php if ($icon_path): ?>
+				<img style="height:30px;" src="<?php echo $icon_path; ?>">
+			<?php endif; ?>
+			<?php echo $user_name ?>さん
+		</a>
 		<a href="./logout.php">ログアウト</a>
 	</header>
 	<?php if($error_msgs): ?>
@@ -74,6 +80,12 @@ if($error_msgs){
 			</tr>
 		</tbody>
 	</table>
+
+	<?php if ($icon_path): ?>
+		<div>
+			<img style="height:50px;" src="<?php echo $user_detail['icon_path']; ?>">
+		</div>
+	<?php endif;?>
 
 	<div>
 		<button><a href="./edit.php">編集</a></button>

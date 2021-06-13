@@ -17,11 +17,11 @@ $error_msgs = ErrorMsgs::getErrorMessages();
 
 #$user_name = $_SESSION['user_name'];
 $user_name = Auth::getUserName();
+$icon_path = Auth::getIconPath();
 
 if ($error_msgs){
     $user_detail['name'] = $_GET['name'];
     $user_detail['detail'] = $_GET['detail'];
-    $user_detail['icon_path'] = $_GET['icon_path'];
 }
 
 ?>
@@ -40,7 +40,12 @@ if ($error_msgs){
         <a href="../todo/index.php">一覧</a>, 
 		<a href="../todo/index.php?view=with_done">一覧（達成済みアリ）</a>, 
 		<a href="../todo/new.php">新規登録</a>
-		<a href="./detail.php"><?php echo $user_name ?>さん</a>
+		<a href="./detail.php">
+			<?php if ($icon_path): ?>
+				<img style="height:30px;" src="<?php echo $icon_path; ?>">
+			<?php endif; ?>
+			<?php echo $user_name ?>さん
+		</a>
 		<a href="./logout.php">ログアウト</a>
 	</header>
 
@@ -53,12 +58,13 @@ if ($error_msgs){
 		</div>
 	<?php endif; ?>
 
-	<form action="./edit.php" method="POST">
+	<form action="./edit.php" method="POST" enctype="multipart/form-data">
 		<div>ユーザーID : <?php echo $user_detail['id']; ?><input type="hidden" name="user_id" value="<?php echo $user_detail['id']; ?>"></div>
 		<div>パスワード：<input type="password" name="password1"></div>		
 		<div>パスワード（確認用）：<input type="password" name="password2"></div>
 		<div>ユーザー名 : <input type="text" name="name" value="<?php echo $user_detail['name']; ?>"></div>
 		<div>詳細 : <textarea name="detail" ><?php echo $user_detail['detail']; ?></textarea></div>
+		<div>アバターアイコン：<input type="file" name="avatar" accept=".png, .jpg, .jpeg"></div>
 		<button type="submit">完了</button>
 	</form>
 

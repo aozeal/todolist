@@ -31,7 +31,7 @@ class UserController{
 
 		$valid_data = $validation->getValidData();
 
-		Auth::setLoginSession($valid_data['id'], $valid_data['name']);
+		Auth::setLoginSession($valid_data['id'], $valid_data['name'], $valid_data['icon_path']); 
 
 		header("Location: ../todo/index.php");		
 		exit;	
@@ -84,6 +84,14 @@ class UserController{
 
 		$data = $validation->getValidData();
 
+		//画像の保存
+		$icon_path = null;
+		if(!empty($_FILES['avatar']) && is_uploaded_file($_FILES['avatar'][tmp_name])){
+			$icon_path = sprintf('../../images/avatar/%s.%s', uniqid(), substr(strrchr($_FILES['avatar']['name'], '.'), 1));
+			move_uploaded_file($_FILES['avatar']['tmp_name'], $icon_path);
+		}
+		$data['icon_path'] = $icon_path;
+
 		$user = new User;
 		$user->setData($data);
 		$result = $user->registration();
@@ -101,7 +109,7 @@ class UserController{
 			exit;	
 		}
 
-		Auth::setLoginSession($data['id'], $data['name']);
+		Auth::setLoginSession($data['id'], $data['name'], $data['icon_path']);
 
 		//本登録されたので仮登録中のメールアドレスを削除
 		MailRegister::registrationFinished();
@@ -152,6 +160,18 @@ class UserController{
 
 		$data = $validation->getValidData();
 
+		//画像の保存
+		$icon_path = null;
+		if(!empty($_FILES['avatar']) && is_uploaded_file($_FILES['avatar'][tmp_name])){
+			$icon_path = sprintf('../../images/avatar/%s.%s', uniqid(), substr(strrchr($_FILES['avatar']['name'], '.'), 1));
+			move_uploaded_file($_FILES['avatar']['tmp_name'], $icon_path);
+		}
+		if (isset($user_detail['icon_path'])){
+			unlink($user_detail['icon_path']);
+		}
+		$data['icon_path'] = $icon_path;
+
+
 		$user = new User;
 		$user->setData($data);
 		$result = $user->update();
@@ -168,7 +188,7 @@ class UserController{
 			exit;
 		}
 
-		Auth::setLoginSession($data['id'], $data['name']);
+		Auth::setLoginSession($data['id'], $data['name'], $data['icon_path']);
 
 		header("Location: ./detail.php");
 		exit;	

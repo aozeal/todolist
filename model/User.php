@@ -50,11 +50,12 @@ class User{
 			$dbh = new PDO(DSN, USERNAME, PASSWORD);
 			$dbh->beginTransaction();
 
-			$stmt = $dbh->prepare("INSERT INTO users (id, name, detail, encrypted_password, created_at, updated_at) VALUES (:id, :name, :detail, :encrypted_password, NOW(), NOW());");
+			$stmt = $dbh->prepare("INSERT INTO users (id, name, detail, encrypted_password, icon_path, created_at, updated_at) VALUES (:id, :name, :detail, :encrypted_password, NOW(), NOW());");
 			$stmt->bindParam(':id', $this->data['id'], PDO::PARAM_STR);
 			$stmt->bindParam(':name', $this->data['name'], PDO::PARAM_STR);
 			$stmt->bindParam(':detail', $this->data['detail'], PDO::PARAM_STR);
 			$stmt->bindParam(':encrypted_password', $this->data['encrypted_password'], PDO::PARAM_STR);
+			$stmt->bindParam(':icon_path', $this->data['icon_path'], PDO::PARAM_STR);
 			$stmt->execute();
 
 			$dbh->commit();
@@ -76,11 +77,12 @@ class User{
 			$dbh = new PDO(DSN, USERNAME, PASSWORD);
 			$dbh->beginTransaction();
 
-			$stmt = $dbh->prepare("UPDATE users SET name=:name, detail=:detail, encrypted_password=:encrypted_password, updated_at=NOW() WHERE id=:id;");
+			$stmt = $dbh->prepare("UPDATE users SET name=:name, detail=:detail, encrypted_password=:encrypted_password, icon_path=:icon_path, updated_at=NOW() WHERE id=:id;");
 			$stmt->bindParam(':name', $this->data['name'], PDO::PARAM_STR);
 			$stmt->bindParam(':detail', $this->data['detail'], PDO::PARAM_STR);
 			$stmt->bindParam(':encrypted_password', $this->data['encrypted_password'], PDO::PARAM_STR);
 			$stmt->bindParam(':id', $this->data['id'], PDO::PARAM_STR);
+			$stmt->bindParam(':icon_path', $this->data['icon_path'], PDO::PARAM_STR);
 			$result = $stmt->execute();
 
 			$dbh->commit();
