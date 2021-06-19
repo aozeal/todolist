@@ -1,7 +1,7 @@
 <?php
 
 class Auth{
-    public const DEFAULT_ICON_PATH = "../../images/avatar/default.png";
+    public const DEFAULT_ICON_PATH = "../../assets/images/avatar/default.png";
 
     static public function logout(){
         if (!isset($_SESSION)){

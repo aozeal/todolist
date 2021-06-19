@@ -87,7 +87,7 @@ class UserController{
 		//画像の保存
 		$icon_path = null;
 		if(!empty($_FILES['avatar']) && is_uploaded_file($_FILES['avatar'][tmp_name])){
-			$icon_path = sprintf('../../images/avatar/%s.%s', uniqid(), substr(strrchr($_FILES['avatar']['name'], '.'), 1));
+			$icon_path = sprintf('../../assets/images/avatar/%s.%s', uniqid(), pathinfo($_FILES['avatar']['name'], PATHINFO_EXTENTION) );
 			move_uploaded_file($_FILES['avatar']['tmp_name'], $icon_path);
 		}
 		$data['icon_path'] = $icon_path;
@@ -163,7 +163,7 @@ class UserController{
 		//画像の保存
 		$icon_path = null;
 		if(!empty($_FILES['avatar']) && is_uploaded_file($_FILES['avatar'][tmp_name])){
-			$icon_path = sprintf('../../images/avatar/%s.%s', uniqid(), substr(strrchr($_FILES['avatar']['name'], '.'), 1));
+			$icon_path = sprintf('../../assets/images/avatar/%s.%s', uniqid(), pathinfo($_FILES['avatar']['name'], PATHINFO_EXTENTION) );
 			move_uploaded_file($_FILES['avatar']['tmp_name'], $icon_path);
 		}
 		if (isset($user_detail['icon_path'])){
