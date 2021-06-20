@@ -2,20 +2,58 @@
 
 
 class TodoController{
+	const MAX_ROW_PER_PAGE = 5;
+
+
+
 	public function index(){
+		$page = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT);
+		if (!$page){
+			$page = 1;
+		}
+
 		$user_id = Auth::getUserId();
 
-		$todo_list = Todo::findAll($user_id);
+		$todo_list = Todo::findByDefault($user_id, $page);
 		
 		return $todo_list;
 	}
 
-	public function indexWithDone(){
+	public function countRowByDefault(){
 		$user_id = Auth::getUserId();
 
-		$todo_list = Todo::findAllWithDone($user_id);
+		$total_row = Todo::countRowWithCondition($user_id, null, null, null);
+		
+		return $total_row;
+	}
+
+	public function indexWithCondition(){
+		$keyword = filter_input(INPUT_GET, 'keyword');
+		$view_done = filter_input(INPUT_GET, 'view_done');
+		$view_deadline = filter_input(INPUT_GET, 'view_deadline');
+		$sort_type = filter_input(INPUT_GET, 'sort_type');
+		$page = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT);
+		if (!$page){
+			$page = 1;
+		}
+
+		$user_id = Auth::getUserId();
+
+		$todo_list = Todo::findAllWithCondition($user_id, $page, $view_done, $view_deadline, $sort_type, $keyword);
 		
 		return $todo_list;
+	}
+
+	public function countRowWithCondition(){
+		$keyword = filter_input(INPUT_GET, 'keyword');
+		$view_done = filter_input(INPUT_GET, 'view_done');
+		$view_deadline = filter_input(INPUT_GET, 'view_deadline');
+
+		$user_id = Auth::getUserId();
+
+		$total_row = Todo::countRowWithCondition($user_id, $view_done, $view_deadline, $keyword);
+		
+		return $total_row;
 	}
 
 	public function detail(){

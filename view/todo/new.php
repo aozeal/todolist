@@ -56,8 +56,7 @@ if($_SERVER['REQUEST_METHOD'] === 'GET'){
 <body>
 <header>
 		<a href="./index.php">一覧</a>, 
-		<a href="./index.php?view=with_done">一覧（達成済みアリ）</a>, 
-		<a href="./new.php">新規登録</a>
+		<a href="./new.php">新規登録</a>,
 		<a href="../user/detail.php">
 			<?php if ($icon_path): ?>
 				<img style="height:30px;" src="<?php echo $icon_path; ?>">

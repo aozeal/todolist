@@ -28,15 +28,31 @@ if (isset($_GET['action']) && $_GET['action'] === 'done'){
 	$action->done();
 }
 
+
+$keyword = filter_input(INPUT_GET, 'keyword');
+$view_done = filter_input(INPUT_GET, 'view_done');
+$view_deadline = filter_input(INPUT_GET, 'view_deadline');
+$sort_type = filter_input(INPUT_GET, 'sort_type');
+$page = filter_input(INPUT_GET, 'page');
+if (!$page){
+	$page = 1;
+}
+
+
 $action = new TodoController;
-if (isset($_GET['view']) && $_GET['view'] === 'with_done'){
-	$todo_list = $action->indexWithDone();
+if (isset($_GET['view']) && $_GET['view'] === 'with_condition'){
+	$total_row = $action->countRowWithCondition();
+	$total_pages = ceil($total_row / TodoController::MAX_ROW_PER_PAGE);
+	$todo_list = $action->indexWithCondition();
 }
 else{
+	$total_row = $action->countRowByDefault();
+	$total_pages = ceil($total_row / TodoController::MAX_ROW_PER_PAGE);
 	$todo_list = $action->index();
 }
 
 $now = new DateTime();
+
 
 
 ?>
@@ -54,9 +70,8 @@ $now = new DateTime();
 <body>
 	<header>
 		<a href="./index.php">一覧</a>, 
-		<a href="./index.php?view=with_done">一覧（達成済みアリ）</a>, 
-		<a href="./new.php">新規登録</a>
-		<a href="../history/index.php">履歴</a>
+		<a href="./new.php">新規登録</a>,
+		<a href="../history/index.php">履歴</a>,
 		<a href="../user/detail.php">
 			<?php if ($icon_path): ?>
 				<img style="height:30px;" src="<?php echo $icon_path; ?>">
@@ -73,6 +88,48 @@ $now = new DateTime();
 			<?php endforeach; ?>
 		</div>
 	<?php endif; ?>
+
+	<div>
+		<form action="./index.php" method="GET">
+			<div>
+				達成状況
+				<select name="view_done">
+					<option value="">選択してください</option>
+					<option value="without_done" <?php if($view_done === "without_done"){ echo 'selected';} ?> >
+						未完了のみ
+					</option>
+					<option value="only_done" <?php if($view_done === "only_done"){ echo 'selected';} ?> >完了のみ</option>
+					<option value="with_done" <?php if($view_done === "with_done"){ echo 'selected';} ?> >両方</option>
+				</select>
+			</div>
+			<div>
+				期限
+				<select name="view_deadline">
+					<option value="">選択してください</option>
+					<option value="all" <?php if($view_deadline === "all"){ echo 'selected';} ?> >すべて</option>
+					<option value="before_deadline" <?php if($view_deadline === "before_deadline"){ echo 'selected';} ?> >期限前のみ</option>
+					<option value="close_deadline" <?php if($view_deadline === "close_deadline"){ echo 'selected';} ?> >期限間近のみ</option>
+					<option value="after_deadline" <?php if($view_deadline === "after_deadline"){ echo 'selected';} ?> >期限切れのみ</option>
+				</select>
+			</div>
+			<div>
+				検索キーワード
+				<input type="text" name="keyword" value="<?php echo $keyword; ?>">
+			</div>
+			<div>
+				ソート
+				<select name="sort_type">
+					<option value="">選択してください</option>
+					<option value="created_asc" <?php if($sort_type === "created_asc"){ echo 'selected';} ?> >作成順（昇順）</option>
+					<option value="created_desc" <?php if($sort_type === "created_desc"){ echo 'selected';} ?> >作成順（降順）</option>
+					<option value="deadline_asc" <?php if($sort_type === "deadline_asc"){ echo 'selected';} ?> >期限日順（昇順）</option>
+					<option value="deadline_desc" <?php if($sort_type === "deadline_desc"){ echo 'selected';} ?> >期限日順（降順）</option>					
+				</select>
+			</div>
+			<input type="hidden" name="view" value="with_condition">
+			<button type="submit">表示条件設定</button>
+		</form>
+	</div>
 
 	<ul>
 		<?php if($todo_list):?>
@@ -107,6 +164,15 @@ $now = new DateTime();
 		<?php endif;?>
 
 	</ul>
+	<div>
+		<?php for($i=1; $i<=$total_pages;$i++):?>
+			<?php if($i == $page):?>
+				<?php echo $i;?>
+			<?php else: ?>
+				<a href="./index.php?view=with_condition&page=<?php echo $i;?>&view_deadline=<?php echo $view_deadline;?>&view_done=<?php echo $view_done;?>&sort_type=<?php echo $sort_type;?>&keyword=<?php echo $keyword;?>"><?php echo $i;?></a> 
+			<?php endif;?>
+		<?php endfor; ?>
+	</div>
 </body>
 </html>
 
