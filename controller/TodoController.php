@@ -2,32 +2,7 @@
 
 
 class TodoController{
-	const MAX_ROW_PER_PAGE = 5;
-
-
-
 	public function index(){
-		$page = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT);
-		if (!$page){
-			$page = 1;
-		}
-
-		$user_id = Auth::getUserId();
-
-		$todo_list = Todo::findByDefault($user_id, $page);
-		
-		return $todo_list;
-	}
-
-	public function countRowByDefault(){
-		$user_id = Auth::getUserId();
-
-		$total_row = Todo::countRowWithCondition($user_id, null, null, null);
-		
-		return $total_row;
-	}
-
-	public function indexWithCondition(){
 		$keyword = filter_input(INPUT_GET, 'keyword');
 		$view_done = filter_input(INPUT_GET, 'view_done');
 		$view_deadline = filter_input(INPUT_GET, 'view_deadline');
@@ -37,24 +12,42 @@ class TodoController{
 			$page = 1;
 		}
 
+		//セッションからユーザー情報を取得
 		$user_id = Auth::getUserId();
+		$user_name = Auth::getUserName();
+		$icon_path = Auth::getIconPath();
 
-		$todo_list = Todo::findAllWithCondition($user_id, $page, $view_done, $view_deadline, $sort_type, $keyword);
-		
-		return $todo_list;
-	}
-
-	public function countRowWithCondition(){
-		$keyword = filter_input(INPUT_GET, 'keyword');
-		$view_done = filter_input(INPUT_GET, 'view_done');
-		$view_deadline = filter_input(INPUT_GET, 'view_deadline');
-
-		$user_id = Auth::getUserId();
-
+		//ページ情報を取得
 		$total_row = Todo::countRowWithCondition($user_id, $view_done, $view_deadline, $keyword);
+		$total_pages = ceil($total_row / Todo::MAX_ROW_PER_PAGE);
+
+		//ToDOデータを取得
+		$todo_list = Todo::findAllWithCondition($user_id, $page, $view_done, $view_deadline, $sort_type, $keyword);
+
+
+		//viewに渡すデータを作成
+		$data = array();
+		$data['todo_list'] = $todo_list;
+
+		$data['user'] = array();
+		$data['user']['id'] = $user_id;
+		$data['user']['name'] = $user_name;
+		$data['user']['icon_path'] = $icon_path;
+
+		$data['view_done'] = $view_done;
+		$data['view_deadline'] = $view_deadline;
+		$data['sort_type'] = $sort_type;
+		$data['keyword'] = $keyword;
+		$data['page'] = $page;
+		$data['total_pages'] = $total_pages;
+
+		$data['now'] = new DateTime();
 		
-		return $total_row;
+		$data['error_msgs'] = ErrorMsgs::getErrorMessages();
+
+		return $data;
 	}
+
 
 	public function detail(){
 		$user_id = Auth::getUserId();

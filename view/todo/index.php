@@ -11,48 +11,17 @@ require_once('../../service/auth/Auth.php');
 require_once('../../service/error/ErrorMsgs.php');
 
 
-$error_msgs = ErrorMsgs::getErrorMessages();
-
-$user_name = Auth::getUserName();
-$icon_path = Auth::getIconPath();
-
-
+$action = new TodoController;
 
 if (isset($_GET['action']) && $_GET['action'] === 'delete'){
-	$action = new TodoController;
-	$action->delete(); //$todo_listを返してもいいけど、内部でリダイレクトしたらいいのでは？
+	$action->delete();
 }
 
 if (isset($_GET['action']) && $_GET['action'] === 'done'){
-	$action = new TodoController;
 	$action->done();
 }
 
-
-$keyword = filter_input(INPUT_GET, 'keyword');
-$view_done = filter_input(INPUT_GET, 'view_done');
-$view_deadline = filter_input(INPUT_GET, 'view_deadline');
-$sort_type = filter_input(INPUT_GET, 'sort_type');
-$page = filter_input(INPUT_GET, 'page');
-if (!$page){
-	$page = 1;
-}
-
-
-$action = new TodoController;
-if (isset($_GET['view']) && $_GET['view'] === 'with_condition'){
-	$total_row = $action->countRowWithCondition();
-	$total_pages = ceil($total_row / TodoController::MAX_ROW_PER_PAGE);
-	$todo_list = $action->indexWithCondition();
-}
-else{
-	$total_row = $action->countRowByDefault();
-	$total_pages = ceil($total_row / TodoController::MAX_ROW_PER_PAGE);
-	$todo_list = $action->index();
-}
-
-$now = new DateTime();
-
+$data = $action->index();
 
 
 ?>
@@ -65,7 +34,6 @@ $now = new DateTime();
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
 	<title>TODOリスト</title>
 	<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-
 </head>
 <body>
 	<header>
@@ -73,17 +41,17 @@ $now = new DateTime();
 		<a href="./new.php">新規登録</a>,
 		<a href="../history/index.php">履歴</a>,
 		<a href="../user/detail.php">
-			<?php if ($icon_path): ?>
-				<img style="height:30px;" src="<?php echo $icon_path; ?>">
+			<?php if ($data['user']['icon_path']): ?>
+				<img style="height:30px;" src="<?php echo $data['user']['icon_path']; ?>">
 			<?php endif; ?>
-			<?php echo $user_name ?>さん
+			<?php echo $data['user']['name']; ?>さん
 		</a>
 		<a href="../user/logout.php">ログアウト</a>
 	</header>
-	<?php if($error_msgs): ?>
+	<?php if($data['error_msgs']): ?>
 		<div>
 			<ul>
-			<?php foreach($error_msgs as $error_msg):?>
+			<?php foreach($data['error_msgs'] as $error_msg):?>
 				<li><?php echo $error_msg; ?></li>
 			<?php endforeach; ?>
 		</div>
@@ -95,45 +63,44 @@ $now = new DateTime();
 				達成状況
 				<select name="view_done">
 					<option value="">選択してください</option>
-					<option value="without_done" <?php if($view_done === "without_done"){ echo 'selected';} ?> >
+					<option value="<?php echo Todo::VIEW_DONE_WITHOUT_DONE;?>" <?php if($data['view_done'] === Todo::VIEW_DONE_WITHOUT_DONE){ echo 'selected';} ?> >
 						未完了のみ
 					</option>
-					<option value="only_done" <?php if($view_done === "only_done"){ echo 'selected';} ?> >完了のみ</option>
-					<option value="with_done" <?php if($view_done === "with_done"){ echo 'selected';} ?> >両方</option>
+					<option value="<?php echo Todo::VIEW_DONE_ONLY_DONE;?>" <?php if($data['view_done'] === Todo::VIEW_DONE_ONLY_DONE){ echo 'selected';} ?> >完了のみ</option>
+					<option value="<?php echo Todo::VIEW_DONE_WITH_DONE;?>" <?php if($data['view_done'] === Todo::VIEW_DONE_WITH_DONE){ echo 'selected';} ?> >両方</option>
 				</select>
 			</div>
 			<div>
 				期限
 				<select name="view_deadline">
 					<option value="">選択してください</option>
-					<option value="all" <?php if($view_deadline === "all"){ echo 'selected';} ?> >すべて</option>
-					<option value="before_deadline" <?php if($view_deadline === "before_deadline"){ echo 'selected';} ?> >期限前のみ</option>
-					<option value="close_deadline" <?php if($view_deadline === "close_deadline"){ echo 'selected';} ?> >期限間近のみ</option>
-					<option value="after_deadline" <?php if($view_deadline === "after_deadline"){ echo 'selected';} ?> >期限切れのみ</option>
+					<option value="<?php echo Todo::VIEW_DEADLINE_ALL;?>" <?php if($data['view_deadline'] === Todo::VIEW_DEADLINE_ALL){ echo 'selected';} ?> >すべて</option>
+					<option value="<?php echo Todo::VIEW_DEADLINE_BEFORE_DEADLINE;?>" <?php if($data['view_deadline'] === Todo::VIEW_DEADLINE_BEFORE_DEADLINE){ echo 'selected';} ?> >期限前のみ</option>
+					<option value="<?php echo Todo::VIEW_DEADLINE_CLOSE_DEADLINE ?>" <?php if($data['view_deadline'] === Todo::VIEW_DEADLINE_CLOSE_DEADLINE){ echo 'selected';} ?> >期限間近のみ</option>
+					<option value="<?php echo Todo::VIEW_DEADLINE_AFTER_DEADLINE;?>" <?php if($data['view_deadline'] === Todo::VIEW_DEADLINE_AFTER_DEADLINE){ echo 'selected';} ?> >期限切れのみ</option>
 				</select>
 			</div>
 			<div>
 				検索キーワード
-				<input type="text" name="keyword" value="<?php echo $keyword; ?>">
+				<input type="text" name="keyword" value="<?php echo $data['keyword']; ?>">
 			</div>
 			<div>
 				ソート
 				<select name="sort_type">
 					<option value="">選択してください</option>
-					<option value="created_asc" <?php if($sort_type === "created_asc"){ echo 'selected';} ?> >作成順（昇順）</option>
-					<option value="created_desc" <?php if($sort_type === "created_desc"){ echo 'selected';} ?> >作成順（降順）</option>
-					<option value="deadline_asc" <?php if($sort_type === "deadline_asc"){ echo 'selected';} ?> >期限日順（昇順）</option>
-					<option value="deadline_desc" <?php if($sort_type === "deadline_desc"){ echo 'selected';} ?> >期限日順（降順）</option>					
+					<option value="<?php echo Todo::SORT_TYPE_CREATED_ASC;?>" <?php if($data['sort_type'] === Todo::SORT_TYPE_CREATED_ASC){ echo 'selected';} ?> >作成順（昇順）</option>
+					<option value="<?php echo Todo::SORT_TYPE_CREATED_DESC;?>" <?php if($data['sort_type'] === Todo::SORT_TYPE_CREATED_DESC){ echo 'selected';} ?> >作成順（降順）</option>
+					<option value="<?php echo Todo::SORT_TYPE_DEADLINE_ASC;?>" <?php if($data['sort_type'] === Todo::SORT_TYPE_DEADLINE_ASC){ echo 'selected';} ?> >期限日順（昇順）</option>
+					<option value="<?php echo Todo::SORT_TYPE_DEADLINE_DESC;?>" <?php if($data['sort_type'] === Todo::SORT_TYPE_DEADLINE_DESC){ echo 'selected';} ?> >期限日順（降順）</option>					
 				</select>
 			</div>
-			<input type="hidden" name="view" value="with_condition">
 			<button type="submit">表示条件設定</button>
 		</form>
 	</div>
 
 	<ul>
-		<?php if($todo_list):?>
-			<?php foreach($todo_list as $todo):?>
+		<?php if($data['todo_list']):?>
+			<?php foreach($data['todo_list'] as $todo):?>
 				<li>
 					<a href="./detail.php?id=<?php echo $todo['id']; ?>">
 						<?php echo $todo['id']; ?> : 
@@ -141,10 +108,10 @@ $now = new DateTime();
 					</a>
 					<?php
 						$deadline = new DateTime($todo['deadline_at'], new DateTimeZone('Asia/Tokyo'));
-						$interval = $deadline->diff($now); ?>
+						$interval = $deadline->diff($data['now']); ?>
 					<?php if (is_null($todo['deadline_at'])): ?>
 
-					<?php elseif ($now > $deadline): ?>
+					<?php elseif ($data['now'] > $deadline): ?>
 						期限切れ
 					<?php elseif ($interval->d < 1): ?>
 						期限間近！
@@ -165,11 +132,11 @@ $now = new DateTime();
 
 	</ul>
 	<div>
-		<?php for($i=1; $i<=$total_pages;$i++):?>
-			<?php if($i == $page):?>
+		<?php for($i=1; $i<=$data['total_pages'];$i++):?>
+			<?php if($i == $data['page']):?>
 				<?php echo $i;?>
 			<?php else: ?>
-				<a href="./index.php?view=with_condition&page=<?php echo $i;?>&view_deadline=<?php echo $view_deadline;?>&view_done=<?php echo $view_done;?>&sort_type=<?php echo $sort_type;?>&keyword=<?php echo $keyword;?>"><?php echo $i;?></a> 
+				<a href="./index.php?view=with_condition&page=<?php echo $i;?>&view_deadline=<?php echo $data['view_deadline'];?>&view_done=<?php echo $data['view_done'];?>&sort_type=<?php echo $data['sort_type'];?>&keyword=<?php echo $data['keyword'];?>"><?php echo $i;?></a> 
 			<?php endif;?>
 		<?php endfor; ?>
 	</div>

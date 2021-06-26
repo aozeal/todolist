@@ -2,6 +2,20 @@
 
 
 class Todo{
+	const MAX_ROW_PER_PAGE = 5;
+	const SORT_TYPE_CREATED_ASC = "created_asc";
+	const SORT_TYPE_CREATED_DESC = "created_desc";
+	const SORT_TYPE_DEADLINE_ASC = "deadline_asc";
+	const SORT_TYPE_DEADLINE_DESC = "deadline_desc";
+	const VIEW_DONE_WITHOUT_DONE = "without_done";
+	const VIEW_DONE_ONLY_DONE = "only_done";
+	const VIEW_DONE_WITH_DONE = "with_done";
+	const VIEW_DEADLINE_ALL = "all";
+	const VIEW_DEADLINE_BEFORE_DEADLINE = "before_deadline";
+	const VIEW_DEADLINE_AFTER_DEADLINE = "after_deadline";
+	const VIEW_DEADLINE_CLOSE_DEADLINE = "close_deadline";
+
+
 	public $id;
 	public $title;
 	public $detail;
@@ -67,36 +81,6 @@ class Todo{
 	}
 
 
-	public static function findByQuery($query){
-		$dbh = new PDO(DSN, USERNAME, PASSWORD);
-		$stmt = $dbh->query($query);
-
-		if($stmt){
-			$result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-		}
-		else{
-			$result = [];
-		}
-		return $result;
-	}
-
-	//全レコードを取得（未使用）
-	public static function findAll($user_id){
-		$query = sprintf("SELECT * FROM todos WHERE user_id='%s' AND deleted_at IS NULL AND done_at IS NULL;", $user_id);
-		return self::findByQuery($query);
-	}
-	
-
-	//デフォルト設定で１ページ取得
-	public static function findByDefault($user_id, $page){
-		return self::findAllWithCondition($user_id, $page, null, null, null, null);
-	}
-
-	public static function countByDefault($user_id){
-		return self::countRowWithCondition($user_id, null, null, null);
-	}
-
-
 	//検索条件などをつける
 	public static function findAllWithCondition($user_id, $page, $view_done, $view_deadline, $sort_type, $keyword){
 
@@ -110,10 +94,10 @@ class Todo{
 			$query_data[] = '%' . $keyword . '%';				
 		}
 
-		if($view_done === "only_done"){
+		if($view_done === Todo::VIEW_DONE_ONLY_DONE){
 			$query .= "AND done_at IS NOT NULL ";
 		}
-		else if($view_done === "with_done"){
+		else if($view_done === Todo::VIEW_DONE_WITH_DONE){
 			//両方（with_done）query追加なし
 		}
 		else{
@@ -122,31 +106,29 @@ class Todo{
 		}
 
 		$now = new DateTime('Asia/Tokyo');
-		if ($view_deadline === "after_deadline"){
+		if ($view_deadline === Todo::VIEW_DEADLINE_AFTER_DEADLINE){
 			$query .= "AND ( deadline_at < ? ) ";
 			$query_data[] = $now->format('Y-m-d H:i:s');
 		}
-		else if ($view_deadline === "before_deadline"){
+		else if ($view_deadline === Todo::VIEW_DEADLINE_BEFORE_DEADLINE){
 			$query .= "AND ( deadline_at > ? OR deadline_at IS NULL ) ";
 			$query_data[] = $now->format('Y-m-d H:i:s');
 		}
-		else if ($view_deadline === "close_deadline"){
+		else if ($view_deadline === Todo::VIEW_DEADLINE_CLOSE_DEADLINE){
 			$query .= "AND ( deadline_at > ? AND deadline_at < ? ) ";
 			$query_data[] = $now->format('Y-m-d H:i:s');
 			$query_data[] = $now->modify('+1 day')->format('Y-m-d H:i:s');
 		}
-		else{
-			//全て(all)query追加なし
-		}
+		//全て(all)query追加なし
 
-		if ($sort_type === "deadline_asc" || $sort_type === "deadline_desc"){
+		if ($sort_type === Todo::SORT_TYPE_DEADLINE_ASC || $sort_type === Todo::SORT_TYPE_DEADLINE_DESC){
 			$query .= "ORDER BY deadline_at ";
 		}
 		else{
 			$query .= "ORDER BY created_at ";				
 		}
 
-		if ($sort_type === "deadline_desc" || $sort_type === "created_desc"){
+		if ($sort_type === Todo::SORT_TYPE_DEADLINE_DESC || $sort_type === Todo::SORT_TYPE_CREATED_DESC){
 			$query .= "DESC ";
 		}
 		else{
@@ -154,8 +136,8 @@ class Todo{
 		}
 
 		#整数を疑問符プレースホルダーで扱うことができなかったため直接分に入れる
-		$query .= "LIMIT " . TodoController::MAX_ROW_PER_PAGE;
-		$query .= " OFFSET " . TodoController::MAX_ROW_PER_PAGE * ($page - 1) . ";";
+		$query .= "LIMIT " . Todo::MAX_ROW_PER_PAGE;
+		$query .= " OFFSET " . Todo::MAX_ROW_PER_PAGE * ($page - 1) . ";";
 
 		try{
 			$dbh = new PDO(DSN, USERNAME, PASSWORD);
@@ -214,9 +196,7 @@ class Todo{
 			$query_data[] = $now->format('Y-m-d H:i:s');
 			$query_data[] = $now->modify('+1 day')->format('Y-m-d H:i:s');
 		}
-		else{
-			//全て(all)query追加なし
-		}
+		//全て(all)query追加なし
 
 		$query .= ";";
 
