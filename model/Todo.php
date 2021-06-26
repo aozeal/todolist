@@ -80,24 +80,22 @@ class Todo{
 		return $this->user_id;
 	}
 
-
-	//検索条件などをつける
-	public static function findAllWithCondition($user_id, $page, $view_done, $view_deadline, $sort_type, $keyword){
+	static function buildQuery($query_str, $user_id, $view_mode){
 
 		$query_data = [];
 
-		$query = "SELECT * FROM todos WHERE user_id=? AND deleted_at IS NULL ";
+		$query = $query_str . " WHERE user_id=? AND deleted_at IS NULL ";
 		$query_data[] = $user_id;
 
-		if ($keyword){
+		if ($view_mode['keyword']){
 			$query .= "AND title like ? ";
-			$query_data[] = '%' . $keyword . '%';				
+			$query_data[] = '%' . $view_mode['keyword'] . '%';				
 		}
 
-		if($view_done === Todo::VIEW_DONE_ONLY_DONE){
+		if($view_mode['view_done'] === Todo::VIEW_DONE_ONLY_DONE){
 			$query .= "AND done_at IS NOT NULL ";
 		}
-		else if($view_done === Todo::VIEW_DONE_WITH_DONE){
+		else if($view_mode['view_done'] === Todo::VIEW_DONE_WITH_DONE){
 			//両方（with_done）query追加なし
 		}
 		else{
@@ -106,29 +104,29 @@ class Todo{
 		}
 
 		$now = new DateTime('Asia/Tokyo');
-		if ($view_deadline === Todo::VIEW_DEADLINE_AFTER_DEADLINE){
+		if ($view_mode['view_deadline'] === Todo::VIEW_DEADLINE_AFTER_DEADLINE){
 			$query .= "AND ( deadline_at < ? ) ";
 			$query_data[] = $now->format('Y-m-d H:i:s');
 		}
-		else if ($view_deadline === Todo::VIEW_DEADLINE_BEFORE_DEADLINE){
+		else if ($view_mode['view_deadline'] === Todo::VIEW_DEADLINE_BEFORE_DEADLINE){
 			$query .= "AND ( deadline_at > ? OR deadline_at IS NULL ) ";
 			$query_data[] = $now->format('Y-m-d H:i:s');
 		}
-		else if ($view_deadline === Todo::VIEW_DEADLINE_CLOSE_DEADLINE){
+		else if ($view_mode['view_deadline'] === Todo::VIEW_DEADLINE_CLOSE_DEADLINE){
 			$query .= "AND ( deadline_at > ? AND deadline_at < ? ) ";
 			$query_data[] = $now->format('Y-m-d H:i:s');
 			$query_data[] = $now->modify('+1 day')->format('Y-m-d H:i:s');
 		}
 		//全て(all)query追加なし
 
-		if ($sort_type === Todo::SORT_TYPE_DEADLINE_ASC || $sort_type === Todo::SORT_TYPE_DEADLINE_DESC){
+		if ($view_mode['sort_type'] === Todo::SORT_TYPE_DEADLINE_ASC || $view_mode['sort_type'] === Todo::SORT_TYPE_DEADLINE_DESC){
 			$query .= "ORDER BY deadline_at ";
 		}
 		else{
 			$query .= "ORDER BY created_at ";				
 		}
 
-		if ($sort_type === Todo::SORT_TYPE_DEADLINE_DESC || $sort_type === Todo::SORT_TYPE_CREATED_DESC){
+		if ($view_mode['sort_type'] === Todo::SORT_TYPE_DEADLINE_DESC || $view_mode['sort_type'] === Todo::SORT_TYPE_CREATED_DESC){
 			$query .= "DESC ";
 		}
 		else{
@@ -137,7 +135,25 @@ class Todo{
 
 		#整数を疑問符プレースホルダーで扱うことができなかったため直接分に入れる
 		$query .= "LIMIT " . Todo::MAX_ROW_PER_PAGE;
-		$query .= " OFFSET " . Todo::MAX_ROW_PER_PAGE * ($page - 1) . ";";
+		$query .= " OFFSET " . Todo::MAX_ROW_PER_PAGE * ($view_mode['page'] - 1) . ";";
+
+
+		$data = array(
+			'query' => $query,
+			'query_data' => $query_data
+		);
+		return $data;
+	}
+
+	//検索条件などをつける
+	public static function findAllWithCondition($user_id, $view_mode){
+
+		$query_str = "SELECT * FROM todos ";
+
+		$data = self::buildQuery($query_str, $user_id, $view_mode);
+
+		$query = $data['query'];
+		$query_data = $data['query_data'];
 
 		try{
 			$dbh = new PDO(DSN, USERNAME, PASSWORD);
@@ -159,48 +175,14 @@ class Todo{
 	}
 	
 	//総件数をカウントする
-	public static function countRowWithCondition($user_id, $view_done, $view_deadline, $keyword){
+	public static function countRowWithCondition($user_id, $view_mode){
 
-		$query_data = [];
+		$query_str = "SELECT COUNT(*) AS count FROM todos ";
 
-		$query = "SELECT COUNT(*) AS count FROM todos WHERE user_id=? AND deleted_at IS NULL ";
-		$query_data[] = $user_id;
+		$data = self::buildQuery($query_str, $user_id, $view_mode);
 
-		if ($keyword){
-			$query .= "AND title like ? ";
-			$query_data[] = '%' . $keyword . '%';				
-		}
-
-		if($view_done === "only_done"){
-			$query .= "AND done_at IS NOT NULL ";
-		}
-		else if($view_done === "with_done"){
-			//両方（with_done）query追加なし
-		}
-		else{
-			//($view_done === "without_done" || $view_done === ""){
-			$query .= "AND done_at IS NULL ";
-		}
-
-		$now = new DateTime('Asia/Tokyo');
-		if ($view_deadline === "after_deadline"){
-			$query .= "AND ( deadline_at < ? ) ";
-			$query_data[] = $now->format('Y-m-d H:i:s');
-		}
-		else if ($view_deadline === "before_deadline"){
-			$query .= "AND ( deadline_at > ? OR deadline_at IS NULL ) ";
-			$query_data[] = $now->format('Y-m-d H:i:s');
-		}
-		else if ($view_deadline === "close_deadline"){
-			$query .= "AND ( deadline_at > ? AND deadline_at < ? ) ";
-			$query_data[] = $now->format('Y-m-d H:i:s');
-			$query_data[] = $now->modify('+1 day')->format('Y-m-d H:i:s');
-		}
-		//全て(all)query追加なし
-
-		$query .= ";";
-
-
+		$query = $data['query'];
+		$query_data = $data['query_data'];
 		try{
 			$dbh = new PDO(DSN, USERNAME, PASSWORD);
 			$dbh->beginTransaction();
