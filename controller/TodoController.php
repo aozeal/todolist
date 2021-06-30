@@ -11,13 +11,6 @@ class TodoController{
 		if (!$page){
 			$page = 1;
 		}
-		$view_mode = array(
-			'keyword' => $keyword,
-			'view_done' => $view_done,
-			'view_deadline' => $view_deadline,
-			'sort_type' => $sort_type,
-			'page' => $page
-		);
 
 		//セッションからユーザー情報を取得
 		$user_id = Auth::getUserId();
@@ -25,11 +18,11 @@ class TodoController{
 		$icon_path = Auth::getIconPath();
 
 		//ページ情報を取得
-		$total_row = Todo::countRowWithCondition($user_id, $view_mode);
+		$total_row = Todo::countRowWithCondition($user_id, $view_done, $view_deadline, $keyword);
 		$total_pages = ceil($total_row / Todo::MAX_ROW_PER_PAGE);
 
 		//ToDOデータを取得
-		$todo_list = Todo::findAllWithCondition($user_id, $view_mode);
+		$todo_list = Todo::findAllWithCondition($user_id, $page, $view_done, $view_deadline, $keyword, $sort_type);
 
 
 		//viewに渡すデータを作成
@@ -41,8 +34,12 @@ class TodoController{
 		$data['user']['name'] = $user_name;
 		$data['user']['icon_path'] = $icon_path;
 
-		$data['view_mode'] = $view_mode;
-		$data['view_mode']['total_pages'] = $total_pages;
+		$data['keyword'] = $keyword;
+		$data['view_done'] = $view_done;
+		$data['view_deadline'] = $view_deadline;
+		$data['sort_type'] = $sort_type;
+		$data['page'] = $page;
+		$data['total_pages'] = $total_pages;
 
 		$data['now'] = new DateTime();
 		

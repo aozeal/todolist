@@ -63,35 +63,35 @@ $data = $action->index();
 				達成状況
 				<select name="view_done">
 					<option value="">選択してください</option>
-					<option value="<?php echo Todo::VIEW_DONE_WITHOUT_DONE;?>" <?php if($data['view_mode']['view_done'] === Todo::VIEW_DONE_WITHOUT_DONE){ echo 'selected';} ?> >
+					<option value="<?php echo Todo::VIEW_DONE_WITHOUT_DONE;?>" <?php if($data['view_done'] === Todo::VIEW_DONE_WITHOUT_DONE){ echo 'selected';} ?> >
 						未完了のみ
 					</option>
-					<option value="<?php echo Todo::VIEW_DONE_ONLY_DONE;?>" <?php if($data['view_mode']['view_done'] === Todo::VIEW_DONE_ONLY_DONE){ echo 'selected';} ?> >完了のみ</option>
-					<option value="<?php echo Todo::VIEW_DONE_WITH_DONE;?>" <?php if($data['view_mode']['view_done'] === Todo::VIEW_DONE_WITH_DONE){ echo 'selected';} ?> >両方</option>
+					<option value="<?php echo Todo::VIEW_DONE_ONLY_DONE;?>" <?php if($data['view_done'] === Todo::VIEW_DONE_ONLY_DONE){ echo 'selected';} ?> >完了のみ</option>
+					<option value="<?php echo Todo::VIEW_DONE_WITH_DONE;?>" <?php if($data['view_done'] === Todo::VIEW_DONE_WITH_DONE){ echo 'selected';} ?> >両方</option>
 				</select>
 			</div>
 			<div>
 				期限
 				<select name="view_deadline">
 					<option value="">選択してください</option>
-					<option value="<?php echo Todo::VIEW_DEADLINE_ALL;?>" <?php if($data['view_mode']['view_deadline'] === Todo::VIEW_DEADLINE_ALL){ echo 'selected';} ?> >すべて</option>
-					<option value="<?php echo Todo::VIEW_DEADLINE_BEFORE_DEADLINE;?>" <?php if($data['view_mode']['view_deadline'] === Todo::VIEW_DEADLINE_BEFORE_DEADLINE){ echo 'selected';} ?> >期限前のみ</option>
-					<option value="<?php echo Todo::VIEW_DEADLINE_CLOSE_DEADLINE ?>" <?php if($data['view_mode']['view_deadline'] === Todo::VIEW_DEADLINE_CLOSE_DEADLINE){ echo 'selected';} ?> >期限間近のみ</option>
-					<option value="<?php echo Todo::VIEW_DEADLINE_AFTER_DEADLINE;?>" <?php if($data['view_mode']['view_deadline'] === Todo::VIEW_DEADLINE_AFTER_DEADLINE){ echo 'selected';} ?> >期限切れのみ</option>
+					<option value="<?php echo Todo::VIEW_DEADLINE_ALL;?>" <?php if($data['view_deadline'] === Todo::VIEW_DEADLINE_ALL){ echo 'selected';} ?> >すべて</option>
+					<option value="<?php echo Todo::VIEW_DEADLINE_BEFORE_DEADLINE;?>" <?php if($data['view_deadline'] === Todo::VIEW_DEADLINE_BEFORE_DEADLINE){ echo 'selected';} ?> >期限前のみ</option>
+					<option value="<?php echo Todo::VIEW_DEADLINE_CLOSE_DEADLINE ?>" <?php if($data['view_deadline'] === Todo::VIEW_DEADLINE_CLOSE_DEADLINE){ echo 'selected';} ?> >期限間近のみ</option>
+					<option value="<?php echo Todo::VIEW_DEADLINE_AFTER_DEADLINE;?>" <?php if($data['view_deadline'] === Todo::VIEW_DEADLINE_AFTER_DEADLINE){ echo 'selected';} ?> >期限切れのみ</option>
 				</select>
 			</div>
 			<div>
 				検索キーワード
-				<input type="text" name="keyword" value="<?php echo $data['view_mode']['keyword']; ?>">
+				<input type="text" name="keyword" value="<?php echo $data['keyword']; ?>">
 			</div>
 			<div>
 				ソート
 				<select name="sort_type">
 					<option value="">選択してください</option>
-					<option value="<?php echo Todo::SORT_TYPE_CREATED_ASC;?>" <?php if($data['view_mode']['sort_type'] === Todo::SORT_TYPE_CREATED_ASC){ echo 'selected';} ?> >作成順（昇順）</option>
-					<option value="<?php echo Todo::SORT_TYPE_CREATED_DESC;?>" <?php if($data['view_mode']['sort_type'] === Todo::SORT_TYPE_CREATED_DESC){ echo 'selected';} ?> >作成順（降順）</option>
-					<option value="<?php echo Todo::SORT_TYPE_DEADLINE_ASC;?>" <?php if($data['view_mode']['sort_type'] === Todo::SORT_TYPE_DEADLINE_ASC){ echo 'selected';} ?> >期限日順（昇順）</option>
-					<option value="<?php echo Todo::SORT_TYPE_DEADLINE_DESC;?>" <?php if($data['view_mode']['sort_type'] === Todo::SORT_TYPE_DEADLINE_DESC){ echo 'selected';} ?> >期限日順（降順）</option>					
+					<option value="<?php echo Todo::SORT_TYPE_CREATED_ASC;?>" <?php if($data['sort_type'] === Todo::SORT_TYPE_CREATED_ASC){ echo 'selected';} ?> >作成順（昇順）</option>
+					<option value="<?php echo Todo::SORT_TYPE_CREATED_DESC;?>" <?php if($data['sort_type'] === Todo::SORT_TYPE_CREATED_DESC){ echo 'selected';} ?> >作成順（降順）</option>
+					<option value="<?php echo Todo::SORT_TYPE_DEADLINE_ASC;?>" <?php if($data['sort_type'] === Todo::SORT_TYPE_DEADLINE_ASC){ echo 'selected';} ?> >期限日順（昇順）</option>
+					<option value="<?php echo Todo::SORT_TYPE_DEADLINE_DESC;?>" <?php if($data['sort_type'] === Todo::SORT_TYPE_DEADLINE_DESC){ echo 'selected';} ?> >期限日順（降順）</option>					
 				</select>
 			</div>
 			<button type="submit">表示条件設定</button>
@@ -132,11 +132,11 @@ $data = $action->index();
 
 	</ul>
 	<div>
-		<?php for($i=1; $i<=$data['view_mode']['total_pages'];$i++):?>
-			<?php if($i == $data['view_mode']['page']):?>
+		<?php for($i=1; $i<=$data['total_pages'];$i++):?>
+			<?php if($i == $data['page']):?>
 				<?php echo $i;?>
 			<?php else: ?>
-				<a href="./index.php?view=with_condition&page=<?php echo $i;?>&view_deadline=<?php echo $data['view_mode']['view_deadline'];?>&view_done=<?php echo $data['view_mode']['view_done'];?>&sort_type=<?php echo $data['view_mode']['sort_type'];?>&keyword=<?php echo $data['view_mode']['keyword'];?>"><?php echo $i;?></a> 
+				<a href="./index.php?view=with_condition&page=<?php echo $i;?>&view_deadline=<?php echo $data['view_deadline'];?>&view_done=<?php echo $data['view_done'];?>&sort_type=<?php echo $data['sort_type'];?>&keyword=<?php echo $data['keyword'];?>"><?php echo $i;?></a> 
 			<?php endif;?>
 		<?php endfor; ?>
 	</div>
