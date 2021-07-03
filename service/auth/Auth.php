@@ -12,8 +12,6 @@ class Auth{
 
         session_destroy();
 
-        header("Location: ../user/login.php");
-        exit;
     }
 
     static public function setLoginSession($user_id, $user_name, $icon_path){

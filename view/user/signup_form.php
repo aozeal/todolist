@@ -17,20 +17,10 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
 }
 
 
-$token = $_GET['token'];
-$result = MailRegister::validateToken($token);
+$action = new MailRegister;
+$user_id = $action->validateToken();
 
-if (!$result){
-	if (!isset($_SESSION)){
-		session_start();
-	}
-	$_SESSION['error_msgs'] = ['URLが正しくありません。'];
-	header("Location: ../error/token_error.php");
-	exit;
-}
-$user_id = MailRegister::getRegisterMail();
-
-
+$token = filter_input(INPUT_GET, 'token');
 $error_msgs = ErrorMsgs::getErrorMessages();
 
 ?>
@@ -59,7 +49,8 @@ $error_msgs = ErrorMsgs::getErrorMessages();
 	<?php endif; ?>
 
 	<form action="./signup_form.php" method="POST">
-		<input type="hidden" name="token" value=<?php echo '"' . $token . '"'; ?> >
+		<input type="hidden" name="token" value="<?php echo $token; ?>" >
+		<input type="hidden" name="user_id" value="<?php echo $user_id; ?>" >
 		<div>ユーザーID : <?php echo $user_id; ?></div>
 		<div>パスワード：<input type="password" name="password1"></div>		
 		<div>パスワード（確認用）：<input type="password" name="password2"></div>

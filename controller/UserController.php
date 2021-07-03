@@ -39,26 +39,27 @@ class UserController{
 
 
 	public function signup(){
-		//$user_id = $_POST['user_id'];
-		$user_id = MailRegister::getRegisterMail();
-		$result = User::findById($user_id);
+		$user_id = filter_input(INPUT_POST, 'user_id');
 
-		if ($result !== false){
-			if (!isset($_SESSION)){
-				session_start();
-			}
-			$_SESSION['error_msgs'] = ['登録済のユーザーIDです。'];
-			header("Location: ./signup.php");
-			exit;
-		}
-
-		$token = MailRegister::getRegisterToken();
-		$result = MailRegister::validateToken($token);
+		$result = MailRegister::checkSession($user_id);
 		if (!$result){
 			if (!isset($_SESSION)){
 				session_start();
 			}
-			$_SESSION['error_msgs'] = ['URLが不正です。'];
+			$_SESSION['error_msgs'] = ['不正なデータです。'];
+			header("Location: ../error/token_error.php");
+			exit;
+		}
+
+
+		$result = User::findById($user_id, true);
+
+		//encrypted_passwordが存在するのは登録済のため
+		if ($result['encrypted_password']){
+			if (!isset($_SESSION)){
+				session_start();
+			}
+			$_SESSION['error_msgs'] = ['登録済のユーザーIDです。'];
 			header("Location: ./signup.php");
 			exit;
 		}
@@ -103,6 +104,7 @@ class UserController{
 			session_start();
 			$_SESSION['error_msgs'] = $error_msgs;
 			
+			$token = filter_input(INPUT_GET, 'token');
 			$params = sprintf("?token=%s&user_id=%s&name=%s&detail=%s", 
 				$token, $data['id'], $data['name'], $data['detail']);
 			header("Location: ./signup_form.php" . $params);
@@ -111,8 +113,8 @@ class UserController{
 
 		Auth::setLoginSession($data['id'], $data['name'], $data['icon_path']);
 
-		//本登録されたので仮登録中のメールアドレスを削除
-		MailRegister::registrationFinished();
+		//本登録されたので仮登録用のセッションを削除
+		MailRegister::destroySession();
 
 		header("Location: ../todo/index.php");
 		exit;	
@@ -195,6 +197,85 @@ class UserController{
 
 	}
 
+
+	public function passwordReset(){
+		$user_id = filter_input(INPUT_POST, 'user_id');
+		$token = filter_input(INPUT_POST, 'token');
+
+		$result = MailRegister::checkSession($user_id);
+		if (!$result){
+			if (!isset($_SESSION)){
+				session_start();
+			}
+			$_SESSION['error_msgs'] = ['不正なデータです。'];
+			header("Location: ../error/token_error.php");
+			exit;
+		}
+
+
+		$result = User::findById($user_id);
+
+		$validation = new UserValidation;
+		$validation->setId($user_id);
+		$validation->setPassword1(filter_input(INPUT_POST, 'password1'));
+		$validation->setPassword2(filter_input(INPUT_POST, 'password2'));
+		$validation->setName($result['name']);
+		$validation->setDetail($result['detail']);
+
+		$result = $validation->checkSignup();
+
+		if (!$result){
+			if (!isset($_SESSION)){
+				session_start();
+			}
+			$_SESSION['error_msgs'] = $validation->getErrorMessages();
+			header("Location: ./pw_form.php?token=" . $token);
+			exit;
+		}
+
+		$data = $validation->getValidData();
+
+		$user = new User;
+		$user->setData($data);
+		$result = $user->passwordUpdate();
+
+		if ($result === false){
+			$error_msgs = $user->getErrorMessages();
+
+			//セッションにエラーメッセージを追加
+			session_start();
+			$_SESSION['error_msgs'] = $error_msgs;
+			
+			$params = sprintf("?token=%s&user_id=%s", $token, $data['id']);
+			header("Location: ./pw_form.php" . $params);
+			exit;	
+		}
+
+		Auth::setLoginSession($data['id'], $data['name'], $data['icon_path']);
+
+		//本登録されたので仮登録用のセッションを削除
+		MailRegister::destroySession();
+
+		header("Location: ../todo/index.php");
+		exit;	
+	}
+
+	public function signout(){	
+		$user_id = Auth::getUserId();
+
+		$result = User::signout($user_id);
+		if ($result === false){
+			$error_msgs = $user->getErrorMessages();
+
+			//セッションにエラーメッセージを追加
+			session_start();
+			$_SESSION['error_msgs'] = ['ユーザー情報の削除に失敗しました'];
+			
+			header("Location: ../todo/index.php");
+			exit;	
+		}
+
+	}
 
 }
 

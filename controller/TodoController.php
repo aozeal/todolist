@@ -238,6 +238,25 @@ class TodoController{
 		header("Location: ./index.php");
 	}
 
+	public function deleteAll(){
+		$user_id = Auth::getUserId();
+
+		//削除するTodoがあるかを確認
+		$total_row = Todo::countRowWithCondition($user_id, Todo::VIEW_DONE_WITH_DONE, Todo::VIEW_DEADLINE_ALL, null);
+		if ($total_row === 0){
+			return true;
+		}
+
+		$result = Todo::deleteAll($user_id);
+		if ($result === false){
+			session_start();
+			$_SESSION['error_msgs'] = [sprintf("Todoの削除に失敗しました。id=%s", $todo_id)];
+
+			header("Location: ../todo/index.php");
+			exit;	
+		}
+	}
+
 
 }
 

@@ -2,22 +2,37 @@
 
 
 class MailRegister{
-	static public function register(){
-		$user_id = $_POST['user_id'];
+	public function register(){
+		$user_id = filter_input(INPUT_POST, 'user_id');
 
-		$result = User::findById($user_id);
+		$result = User::findById($user_id, true);
 
 		if ($result){
 			if (!isset($_SESSION)){
 				session_start();
 			}
 			$_SESSION['error_msgs'] = ['すでに登録済のユーザーIDです。'];
-			header("Location: ./mail_register.php");
-			exit;
+			return;
 		}
 
 		//token作る
-		$token = MailRegister::createToken();
+		$user = new User;
+		$user->createToken();
+		$token = $user->getToken();
+
+
+		//メールアドレスを記録する
+		$user->setMailAddress($user_id);
+
+		//DBに登録
+		$result = $user->temporaryRegistration();
+		if (!$result){
+			if (!isset($_SESSION)){
+				session_start();
+			}
+			$_SESSION['error_msgs'] = ['DBの登録に失敗しました。'];
+			return;
+		}
 
 		//メールを送る
 		$to = $user_id;
@@ -26,71 +41,105 @@ class MailRegister{
 		$headers = "From: mail_auth@todo_test.com";
 		mail($to, $subject, $message, $headers);
 
-
-		//セッションにトークンとメールアドレスを記録する
-		//まだuser_idを登録する前なので$_SESSION['user_id']は使わない
-		//（他のURLを入れてもログインできないように）
-		MailRegister::setRegisterToken($token);
-		MailRegister::setRegisterMail($user_id);
-
 		header("Location: ./registed_message.php");
 		exit;
 
 	}
 
-	static function createToken(){
-		return uniqid();
+
+	public function validateToken(){
+		$token = filter_input(INPUT_GET, 'token');
+
+		$user = new User;
+		$user_id = $user->getRegistedMail($token);
+
+		if (!$user_id){
+			if (!isset($_SESSION)){
+				session_start();
+			}
+			$_SESSION['error_msgs'] = ['URLが正しくありません。'];
+			header("Location: ../error/token_error.php");
+			exit;
+		}
+
+		//URL直打ちでsignupされるのを防ぐためにセッションの情報を使う
+		self::createSession($user_id);
+
+		return $user_id;
 	}
 
-	static function setRegisterToken($token){
+	static function createSession($mail){
 		if (!isset($_SESSION)){
 			session_start();
 		}
-		$_SESSION['token'] = $token;
-
+		$_SESSION['mail'] = $mail;
 	}
 
-	static function getRegisterToken(){
-		if (!isset($_SESSION)){
-			session_start();
-		}
-		return $_SESSION['token'];
-
-	}
-
-	static function setRegisterMail($user_id){
-		if (!isset($_SESSION)){
-			session_start();
-		}
-		$_SESSION['unregisted_user_id'] = $user_id;
-
-	}
-
-	static function getRegisterMail(){
-		if (!isset($_SESSION)){
-			session_start();
-		}
-		return $_SESSION['unregisted_user_id'];
-	}
-
-
-	static function validateToken($token){
+	static function checkSession($mail){
 		if (!isset($_SESSION)){
 			session_start();
 		}
 
-		if ($token !== $_SESSION['token']){
+		if (empty($_SESSION['mail'])){
 			return false;
 		}
+
+		if ($_SESSION['mail'] !== $mail){
+			return false;
+		}
+
 		return true;
 	}
 
-	static function registrationFinished(){
+	static function destroySession(){
 		if (!isset($_SESSION)){
 			session_start();
 		}
-		unset($_SESSION['unregisted_user_id']);
-		unset($_SESSION['token']);
+		unset($_SESSION['mail']);
+	}
+
+	public function resendToken(){
+		$user_id = filter_input(INPUT_POST, 'user_id');
+
+		$result = User::findById($user_id);
+
+		if (!$result){
+			if (!isset($_SESSION)){
+				session_start();
+			}
+			$_SESSION['error_msgs'] = ['このメールアドレスは未登録です'];
+			return;
+		}
+
+		//token作る
+		$user = new User;
+		$user->createToken();
+		$token = $user->getToken();
+
+
+		//メールアドレスを記録する
+		$user->setMailAddress($user_id);
+
+		//DBに登録
+		$result = $user->temporaryTokenUpdate();
+		if (!$result){
+			if (!isset($_SESSION)){
+				session_start();
+			}
+			$_SESSION['error_msgs'] = ['DBの登録に失敗しました。'];
+			return;
+		}
+
+		//メールを送る
+		$to = $user_id;
+		$subject = "Access this URL to reset password";
+		$message = "http://localhost:8000/app/view/user/pw_form.php?token=" . $token;
+		$headers = "From: mail_auth@todo_test.com";
+		mail($to, $subject, $message, $headers);
+
+		header("Location: ./registed_message.php");
+		exit;
+
 	}
 
 }

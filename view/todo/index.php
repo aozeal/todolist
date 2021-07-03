@@ -45,8 +45,9 @@ $data = $action->index();
 				<img style="height:30px;" src="<?php echo $data['user']['icon_path']; ?>">
 			<?php endif; ?>
 			<?php echo $data['user']['name']; ?>さん
-		</a>
-		<a href="../user/logout.php">ログアウト</a>
+		</a>, 
+		<a href="../user/logout.php">ログアウト</a>, 
+		<a href="#" id="signout">退会</a>
 	</header>
 	<?php if($data['error_msgs']): ?>
 		<div>
@@ -145,15 +146,22 @@ $data = $action->index();
 
 <script>
 	$(".delete_btn").on('click', function(){
-		alert($(this).data('id') + 'を削除します');
-		const todo_id = $(this).data('id');
-		window.location.href = "./index.php?action=delete&todo_id=" + todo_id;
+		if (confirm($(this).data('id') + 'を削除しますか？')){
+			const todo_id = $(this).data('id');
+			window.location.href = "./index.php?action=delete&todo_id=" + todo_id;
+		}
+	});
+	$(".done_btn").on('click', function(){
+		if (confirm($(this).data('id') + 'を達成にしますか？')){
+			const todo_id = $(this).data('id');
+			window.location.href = "./index.php?action=done&todo_id=" + todo_id;
+		}
 	});
 
-	$(".done_btn").on('click', function(){
-		alert($(this).data('id') + 'を達成にします');
-		const todo_id = $(this).data('id');
-		window.location.href = "./index.php?action=done&todo_id=" + todo_id;
+	$("#signout").on('click', function(){
+		if (confirm("本当に退会しますか？以降はログインできなくなります")){
+			window.location.href = "../user/signout.php";
+		}
 	});
 </script>
 

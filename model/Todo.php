@@ -369,7 +369,27 @@ class Todo{
 		return $result;
 	}
 
+	static function deleteAll($user_id){
+		$query = "UPDATE todos SET updated_at=NOW(), deleted_at=NOW() WHERE user_id=:user_id AND deleted_at is NULL;";
 
+		try{
+			$dbh = new PDO(DSN, USERNAME, PASSWORD);
+			$dbh->beginTransaction();
+			$stmt = $dbh->prepare($query);
+			$stmt->bindParam(':user_id', $user_id, PDO::PARAM_STR);
+
+			$stmt->execute();
+			$dbh->commit();
+
+			$result = true;
+
+		} catch(PDOException $e){
+			$dbh->rollBack();
+
+			$result = false;
+		}
+		return $result;
+	}
 
 }
 
